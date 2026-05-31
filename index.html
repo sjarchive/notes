@@ -1,65 +1,93 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B.Ed I Year Notes</title>
+
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6a11cb">
 </head>
 <body>
 
-    <!-- Background Effects -->
-    <div class="circle c1"></div>
-    <div class="circle c2"></div>
-    <div class="circle c3"></div>
+<div class="circle c1"></div>
+<div class="circle c2"></div>
+<div class="circle c3"></div>
 
-    <div class="container">
+<div class="container">
 
-        <h1>B.Ed I Year Notes Download</h1>
+    <div class="top-bar">
+        <button id="themeToggle">🌙 Dark Mode</button>
+    </div>
 
-        <div class="table-wrapper">
+    <h1>📚 B.Ed I Year Notes</h1>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Subject Name</th>
-                        <th>Download</th>
-                    </tr>
-                </thead>
+    <p id="subjectCount"></p>
 
-                <tbody>
+    <div class="notes-grid">
 
-                    <tr>
-                        <td>Childhood & Growing Up</td>
-                        <td>
-                            <a href="childhood_&_growing_up.pdf"
-                               class="download-btn"
-                               download>
-                                Download PDF
-                            </a>
-                        </td>
-                    </tr>
+        <div class="note-card">
+            <h2>Childhood & Growing Up</h2>
 
-                    <tr>
-                        <td>Contemporary India & Education</td>
-                        <td>
-                            <a href="contemporary_india_&_education.pdf"
-                               class="download-btn"
-                               download>
-                                Download PDF
-                            </a>
-                        </td>
-                    </tr>
+            <div class="actions">
 
-                </tbody>
-            </table>
+                <a href="childhood_&_growing_up.pdf"
+                   target="_blank"
+                   class="preview-btn">
+                    👁️ Preview
+                </a>
 
+                <a href="childhood_&_growing_up.pdf"
+                   download
+                   class="download-btn">
+                    ⬇️ Download
+                </a>
+
+                <button
+                    class="share-btn"
+                    onclick="shareFile('childhood_&_growing_up.pdf')">
+                    🔗 Share
+                </button>
+
+            </div>
+        </div>
+
+        <div class="note-card">
+            <h2>Contemporary India & Education</h2>
+
+            <div class="actions">
+
+                <a href="contemporary_india_&_education.pdf"
+                   target="_blank"
+                   class="preview-btn">
+                    👁️ Preview
+                </a>
+
+                <a href="contemporary_india_&_education.pdf"
+                   download
+                   class="download-btn">
+                    ⬇️ Download
+                </a>
+
+                <button
+                    class="share-btn"
+                    onclick="shareFile('contemporary_india_&_education.pdf')">
+                    🔗 Share
+                </button>
+
+            </div>
         </div>
 
     </div>
 
-    <script src="script.js"></script>
+</div>
+
+<button id="topBtn">↑</button>
+
+<div id="toast"></div>
+
+<script src="script.js"></script>
 
 </body>
 </html>
