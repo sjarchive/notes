@@ -1,12 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Subject Counter
     const cards = document.querySelectorAll(".note-card");
 
     document.getElementById("subjectCount").textContent =
         `Total Subjects: ${cards.length}`;
 
-    // Dark Mode
     const toggle = document.getElementById("themeToggle");
 
     if(localStorage.getItem("darkMode") === "true"){
@@ -30,23 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    // Download Toast
-
     document
         .querySelectorAll(".download-btn")
         .forEach(btn => {
 
             btn.addEventListener("click", () => {
-
                 showToast("✓ Download started");
-
             });
 
         });
 
 });
 
-/* Share PDF Link */
+/* Share Link */
 
 function shareFile(file){
 
@@ -76,14 +70,12 @@ function showToast(message){
     toast.classList.add("show");
 
     setTimeout(() => {
-
         toast.classList.remove("show");
-
     }, 2500);
 
 }
 
-/* Scroll To Top */
+/* Scroll Button */
 
 const topBtn =
     document.getElementById("topBtn");
@@ -100,8 +92,8 @@ window.addEventListener("scroll", () => {
 topBtn.addEventListener("click", () => {
 
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 });
@@ -124,7 +116,7 @@ document.addEventListener(
     }
 );
 
-/* Disable Long Press Selection */
+/* Disable Selection */
 
 document.addEventListener(
     "selectstart",
@@ -133,7 +125,7 @@ document.addEventListener(
     }
 );
 
-/* Optional: Disable Some Keyboard Shortcuts */
+/* Optional Shortcuts */
 
 document.addEventListener(
     "keydown",
@@ -158,20 +150,3 @@ document.addEventListener(
 
     }
 );
-
-/* PWA */
-
-if("serviceWorker" in navigator){
-
-    window.addEventListener(
-        "load",
-        () => {
-
-            navigator
-                .serviceWorker
-                .register("sw.js");
-
-        }
-    );
-
-}
