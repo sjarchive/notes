@@ -326,13 +326,16 @@ color:white;
 
 @media(max-width:600px){
 
-body{
-    padding:15px;
-}
+    body{
+        padding:15px;
 
-.container{
-    padding:18px;
-}
+        background-size:600% 600%;
+        animation:gradientBG 10s ease infinite;
+    }
+
+    .container{
+        padding:18px;
+    }
 
 h1{
     font-size:1.6rem;
