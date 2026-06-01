@@ -162,7 +162,9 @@ font-size:15px;
 
 .notes-grid{
 display:grid;
-gap:20px;
+gap:60px;
+perspective:1000px;
+padding:20px 0;
 }
 
 .note-card{
@@ -174,15 +176,20 @@ border-radius:16px;
 
 padding:20px;
 
-transition:.3s;
+transition:
+    transform .35s ease,
+    opacity .35s ease,
+    box-shadow .35s ease,
+    background .35s ease;
+
+transform:scale(.75);
+
+opacity:.45;
 
 }
 
 .note-card:hover{
-transform:translateY(-4px);
-
 background:rgba(255,255,255,.18);
-
 }
 
 .note-card h2{
@@ -333,6 +340,10 @@ h1{
 
 .note-card h2{
     font-size:18px;
+}
+
+.notes-grid{
+    gap:35px;
 }
 
 .actions{
