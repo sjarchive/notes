@@ -175,14 +175,11 @@ border-radius:16px;
 
 padding:20px;
 
-animation:
-    cardFadeIn .7s cubic-bezier(.22,1,.36,1)
-    forwards;
-
 transition:
     transform .25s ease,
     box-shadow .25s ease,
     background .25s ease;
+
 }
 
 .note-card:hover{
@@ -199,20 +196,6 @@ background:rgba(255,255,255,.18);
 color:white;
 margin-bottom:18px;
 font-size:20px;
-}
-
-@keyframes cardFadeIn{
-
-    from{
-        opacity:.3;
-        transform:translateY(20px);
-    }
-
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-
 }
 
 /* Buttons */
@@ -376,29 +359,4 @@ h1{
     text-align:center;
 }
 
-}
-
-/* Staggered Card Animation */
-.note-card:nth-child(1){
-    animation-delay:.1s;
-}
-
-.note-card:nth-child(2){
-    animation-delay:.2s;
-}
-
-.note-card:nth-child(3){
-    animation-delay:.3s;
-}
-
-.note-card:nth-child(4){
-    animation-delay:.4s;
-}
-
-.note-card:nth-child(5){
-    animation-delay:.5s;
-}
-
-.note-card:nth-child(6){
-    animation-delay:.6s;
 }
