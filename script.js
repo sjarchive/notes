@@ -32,61 +32,13 @@ toggle.addEventListener("click", () => {
 
 });
 
-/* PDF Modal Close Button */
-
-const closeBtn =
-    document.getElementById("closePdf");
-
-closeBtn.addEventListener(
-    "click",
-    () => {
-
-        document
-            .getElementById("pdfModal")
-            .style.display = "none";
-
-        document
-            .getElementById("pdfViewer")
-            .src = "";
-
-    }
-);
-
-/* Close PDF When Clicking Outside */
-
-const pdfModal =
-    document.getElementById("pdfModal");
-
-pdfModal.addEventListener(
-    "click",
-    (e) => {
-
-        if(e.target === pdfModal){
-
-            pdfModal.style.display = "none";
-
-            document
-                .getElementById("pdfViewer")
-                .src = "";
-
-        }
-
-    }
-);
-
 });
 
 /* Preview PDF */
 
-function previewPDF(file){
+function previewPDF(file) {
 
-    document
-        .getElementById("pdfViewer")
-        .src = file;
-
-    document
-        .getElementById("pdfModal")
-        .style.display = "flex";
+window.open(file, "_blank");
 
 }
 
