@@ -208,6 +208,10 @@ gap:10px;
 
 .actions a,
 .actions button{
+    
+position:relative;
+    
+overflow:hidden;
 
 border:none;
 outline:none;
@@ -252,25 +256,38 @@ background:#ff9800;
 position:fixed;
 
 right:20px;
-bottom:90px;
+bottom:30px;
 
 background:#222;
 color:white;
 
 padding:12px 18px;
 
-border-radius:10px;
+border-radius:12px;
 
 opacity:0;
 
-transition:.3s;
+transform:
+    translateY(20px)
+    scale(.95);
+
+transition:
+    opacity .3s ease,
+    transform .3s ease;
 
 pointer-events:none;
 
+z-index:9999;
 }
 
 #toast.show{
+
 opacity:1;
+
+transform:
+    translateY(0)
+    scale(1);
+
 }
 
 /* Scroll Button */
@@ -357,6 +374,37 @@ h1{
 .actions button{
     width:100%;
     text-align:center;
+}
+
+}
+
+/* Ripple effect*/
+.ripple{
+
+position:absolute;
+
+border-radius:50%;
+
+transform:scale(0);
+
+animation:
+    ripple .6s linear;
+
+background:
+    rgba(255,255,255,.5);
+
+pointer-events:none;
+
+}
+
+@keyframes ripple{
+
+to{
+
+    transform:scale(4);
+
+    opacity:0;
+
 }
 
 }
