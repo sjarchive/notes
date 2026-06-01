@@ -328,7 +328,6 @@ color:white;
 
     body{
         padding:15px;
-
         background-size:600% 600%;
         animation:gradientBG 10s ease infinite;
     }
