@@ -236,3 +236,49 @@ document
     );
 
 });
+
+/*Sticky header*/
+const stickyHeader =
+document.getElementById(
+"stickyHeader"
+);
+
+const themeToggle =
+document.getElementById(
+"themeToggle"
+);
+
+window.addEventListener(
+"scroll",
+() => {
+
+    const dark =
+        document.body.classList.contains(
+            "dark"
+        );
+
+    if(window.scrollY > 80){
+
+        stickyHeader.classList.add(
+            "compact"
+        );
+
+        themeToggle.textContent =
+            dark ? "☀️" : "🌙";
+
+    }else{
+
+        stickyHeader.classList.remove(
+            "compact"
+        );
+
+        themeToggle.textContent =
+            dark
+            ? "☀️ Light Mode"
+            : "🌙 Dark Mode";
+
+    }
+
+}
+
+);
