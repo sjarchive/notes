@@ -187,12 +187,6 @@ padding-bottom:24px;
 
 }
 
-.note-card.active{
-
-padding-bottom:24px;
-
-}
-
 .note-card:hover{
 transform:translateY(-6px);
 
