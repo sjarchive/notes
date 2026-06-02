@@ -173,6 +173,8 @@ function (e) {
 
 }
 
+);
+
 /*Collapsible cards*/
 function toggleCard(card, event){
 
