@@ -176,13 +176,7 @@ function (e) {
 );
 
 /*Collapsible cards*/
-function toggleCard(card, event){
-
-    if(
-        event.target.closest("button")
-    ){
-        return;
-    }
+function toggleCard(card){
 
     const allCards =
         document.querySelectorAll(
