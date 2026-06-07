@@ -451,29 +451,25 @@ padding:10px 0;
 
 .note-card{
 
+display:flex;
 
+flex-direction:column;
+
+justify-content:center;
+
+min-height:70px;
 
 background:rgba(255,255,255,.12);
 
-
-
 border:1px solid rgba(255,255,255,.15);
-
-
 
 border-radius:16px;
 
-
-
 padding:20px;
-
-
 
 transition:
 
 all .3s ease;
-
-
 
 }
 
