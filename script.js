@@ -5,8 +5,6 @@ function enterApp() {
     const home = document.getElementById("homeScreen");
     const notes = document.getElementById("notesSection");
 
-    if (!home || !notes) return; // guard: bail if markup missing
-
     home.classList.add("hide-home");
 
     setTimeout(() => {
@@ -19,53 +17,68 @@ function enterApp() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* Subject Counter */
+/* Subject Counter */
 
-    const cards = document.querySelectorAll(".note-card");
+const cards = document.querySelectorAll(".note-card");
 
-    const subjectCount = document.getElementById("subjectCount");
-    if (subjectCount) {                                  // FIX: defensive lookup
-        subjectCount.textContent = `Total Subjects: ${cards.length}`;
-    }
+document.getElementById("subjectCount").textContent =
+    `Total Subjects: ${cards.length}`;
 
-    /* Dark Mode */
+/* Dark Mode */
 
-    const toggle = document.getElementById("themeToggle");
+const toggle = document.getElementById("themeToggle");
 
-    if (toggle) {                                        // FIX: defensive lookup
-        if (localStorage.getItem("darkMode") === "true") {
-            document.body.classList.add("dark");
-            toggle.textContent = "☀️ Light Mode";
-        }
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark");
+    toggle.textContent = "☀️ Light Mode";
+}
 
-        toggle.addEventListener("click", () => {
-            document.body.classList.toggle("dark");
-            const dark = document.body.classList.contains("dark");
-            localStorage.setItem("darkMode", dark);
-            toggle.textContent = dark ? "☀️ Light Mode" : "🌙 Dark Mode";
-        });
-    }
+toggle.addEventListener("click", () => {
 
-    /* Scroll To Top Button */
+    document.body.classList.toggle("dark");
 
-    const topBtn = document.getElementById("topBtn");
+    const dark =
+        document.body.classList.contains("dark");
 
-    if (topBtn) {                                        // FIX: defensive lookup
-        window.addEventListener("scroll", () => {
-            topBtn.style.display = window.scrollY > 200 ? "block" : "none";
-        });
+    localStorage.setItem("darkMode", dark);
 
-        topBtn.addEventListener("click", () => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-    }
+    toggle.textContent =
+        dark
+            ? "☀️ Light Mode"
+            : "🌙 Dark Mode";
+
+});
+
+/* Scroll To Top Button */
+
+const topBtn = document.getElementById("topBtn");
+
+window.addEventListener("scroll", () => {
+
+    topBtn.style.display =
+        window.scrollY > 200
+            ? "block"
+            : "none";
+
+});
+
+topBtn.addEventListener("click", () => {
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+});
 
 });
 
 /* Preview PDF */
 
 function previewPDF(file) {
+
     window.open(file, "_blank");
+
 }
 
 /* Download PDF */
@@ -73,14 +86,18 @@ function previewPDF(file) {
 function downloadPDF(file) {
 
     const a = document.createElement("a");
+
     a.href = file;
     a.download = "";
 
     document.body.appendChild(a);
+
     a.click();
+
     a.remove();
 
     showToast("✓ Download started");
+
 }
 
 /* Share PDF Link */
@@ -89,61 +106,145 @@ async function shareFile(file) {
 
     const url =
         window.location.origin +
-        window.location.pathname.replace("index.html", "") +
+        window.location.pathname.replace(
+            "index.html",
+            ""
+        ) +
         file;
 
-    // NOTE: clipboard API only works on HTTPS or localhost,
-    // so this will fail when testing via file://
     try {
+
         await navigator.clipboard.writeText(url);
+
         showToast("🔗 Link copied");
+
     } catch {
+
         showToast("⚠️ Copy failed — share manually");
+
     }
+
 }
 
 /* Toast Notification */
 
 function showToast(message) {
 
-    const toast = document.getElementById("toast");
-    if (!toast) return;                                  // guard
+    const toast =
+        document.getElementById("toast");
 
     toast.textContent = message;
+
     toast.classList.add("show");
 
     setTimeout(() => {
+
         toast.classList.remove("show");
+
     }, 2500);
+
 }
+
+/* Disable Right Click */
+
+document.addEventListener(
+    "contextmenu",
+    function (e) {
+        e.preventDefault();
+    }
+);
+
+/* Disable Dragging */
+
+document.addEventListener(
+    "dragstart",
+    function (e) {
+        e.preventDefault();
+    }
+);
+
+/* Disable Text Selection */
+
+document.addEventListener(
+    "selectstart",
+    function (e) {
+        e.preventDefault();
+    }
+);
+
+/* Disable Common Developer Shortcuts */
+
+document.addEventListener(
+    "keydown",
+    function (e) {
+
+        if (
+            e.key === "F12" ||
+
+            (e.ctrlKey &&
+                e.shiftKey &&
+                e.key === "I") ||
+
+            (e.ctrlKey &&
+                e.shiftKey &&
+                e.key === "J") ||
+
+            (e.ctrlKey &&
+                e.key === "U")
+        ) {
+            e.preventDefault();
+        }
+
+    }
+);
 
 /* Collapsible Cards */
 
 function toggleCard(card) {
 
-    const allCards = document.querySelectorAll(".note-card");
+    const allCards =
+        document.querySelectorAll(".note-card");
 
     allCards.forEach(c => {
+
         if (c !== card) {
+
             c.classList.remove("active");
+
             const arrow = c.querySelector(".arrow");
-            if (arrow) arrow.textContent = "▼";
+
+            if (arrow) {
+                arrow.textContent = "▼";
+            }
+
         }
+
     });
 
     card.classList.toggle("active");
 
     const arrow = card.querySelector(".arrow");
-    if (arrow) {                                         // FIX: guard added
-        arrow.textContent = card.classList.contains("active") ? "▲" : "▼";
-    }
+
+    arrow.textContent =
+        card.classList.contains("active")
+            ? "▲"
+            : "▼";
+
 }
 
 /* Splash Screen */
 
-window.addEventListener("load", () => {
-    setTimeout(() => {
-        const splash = document.getElementById("splash");
-        if (splash) splash.classList.add("hide");        // FIX: guard added
-    }, 1200);
-});
+window.addEventListener(
+    "load",
+    () => {
+
+        setTimeout(() => {
+
+            document
+                .getElementById("splash")
+                .classList.add("hide");
+
+        }, 1200);
+
+    }
+);
