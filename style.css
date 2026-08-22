@@ -335,21 +335,29 @@ border:none;
 
 outline:none;
 
-font-size:16px;
-
 cursor:pointer;
 
 padding:6px;
 
 line-height:1;
 
-opacity:.8;
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:rgba(255,255,255,.75);
+
+opacity:.85;
 
 }
 
 .toggle-password:hover{
 
 opacity:1;
+
+color:white;
 
 }
 
