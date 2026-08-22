@@ -1,7 +1,7 @@
 /* ===================== Auth ===================== */
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_.]{5,20}$/;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.]{5,10}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,20}$/;
 
 function switchAuthTab(tab) {
 
@@ -10,7 +10,9 @@ function switchAuthTab(tab) {
     const loginForm = document.getElementById("loginForm");
     const signupForm = document.getElementById("signupForm");
 
-    document.getElementById("authError").textContent = "";
+    const authError = document.getElementById("authError");
+    authError.textContent = "";
+    authError.classList.remove("auth-success");
 
     if (tab === "login") {
         loginTabBtn.classList.add("active");
@@ -27,7 +29,15 @@ function switchAuthTab(tab) {
 }
 
 function showAuthError(message) {
-    document.getElementById("authError").textContent = message;
+    const authError = document.getElementById("authError");
+    authError.textContent = message;
+    authError.classList.remove("auth-success");
+}
+
+function showAuthSuccess(message) {
+    const authError = document.getElementById("authError");
+    authError.textContent = message;
+    authError.classList.add("auth-success");
 }
 
 function friendlyAuthError(error) {
@@ -57,12 +67,12 @@ function handleSignup(event) {
     const password = document.getElementById("signupPassword").value;
 
     if (!USERNAME_REGEX.test(username)) {
-        showAuthError("Username must be 5–20 characters: letters, numbers, periods, underscores only.");
+        showAuthError("Username must be 5–10 characters: letters, numbers, periods, underscores only.");
         return false;
     }
 
     if (!PASSWORD_REGEX.test(password)) {
-        showAuthError("Password must be 8+ characters with an uppercase letter, lowercase letter, number, and special character.");
+        showAuthError("Password must be 8–20 characters with an uppercase letter, lowercase letter, number, and special character.");
         return false;
     }
 
@@ -71,6 +81,14 @@ function handleSignup(event) {
     firebase.auth().createUserWithEmailAndPassword(usernameToEmail(username), password)
         .then(cred => {
             return cred.user.updateProfile({ displayName: username });
+        })
+        .then(() => {
+            return firebase.auth().signOut();
+        })
+        .then(() => {
+            document.getElementById("signupForm").reset();
+            switchAuthTab("login");
+            showAuthSuccess("Account created! Please log in.");
         })
         .catch(error => {
             showAuthError(friendlyAuthError(error));
@@ -194,13 +212,9 @@ function leaveApp() {
         switchAuthTab("login");
 
         home.style.display = "";
-
-        /* Force a reflow so removing hide-home actually triggers a transition, not an instant jump */
-        void home.offsetWidth;
-
         home.classList.remove("hide-home");
 
-    }, 400);
+    }, 200);
 
 }
 

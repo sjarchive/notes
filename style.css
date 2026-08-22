@@ -375,6 +375,12 @@ min-height:16px;
 
 }
 
+.auth-error.auth-success{
+
+color:#b6ffb0;
+
+}
+
 #logoutLink{
 
 margin-top:14px;
@@ -401,17 +407,11 @@ background:rgba(255,255,255,.15);
 
 /* Notes Section */
 
-#notesSection{
-
-transition:opacity .4s ease, transform .4s ease;
-
-}
-
 #notesSection.leaving{
 
-opacity:0;
+transition:opacity .2s ease;
 
-transform:translateY(16px);
+opacity:0;
 
 }
 
