@@ -78,6 +78,8 @@ function handleSignup(event) {
 
     showAuthError("");
 
+    suppressAuthTransition = true;
+
     firebase.auth().createUserWithEmailAndPassword(usernameToEmail(username), password)
         .then(cred => {
             return cred.user.updateProfile({ displayName: username });
@@ -86,11 +88,13 @@ function handleSignup(event) {
             return firebase.auth().signOut();
         })
         .then(() => {
+            suppressAuthTransition = false;
             document.getElementById("signupForm").reset();
             switchAuthTab("login");
             showAuthSuccess("Account created! Please log in.");
         })
         .catch(error => {
+            suppressAuthTransition = false;
             showAuthError(friendlyAuthError(error));
         });
 
@@ -121,8 +125,13 @@ function handleLogout() {
 }
 
 let authInitialized = false;
+let suppressAuthTransition = false;
 
 firebase.auth().onAuthStateChanged(user => {
+
+    if (suppressAuthTransition) {
+        return;
+    }
 
     const authBox = document.getElementById("authBox");
     const home = document.getElementById("homeScreen");
