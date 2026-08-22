@@ -1,6 +1,7 @@
 /* ===================== Auth ===================== */
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_.]{3,20}$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.]{5,20}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 function switchAuthTab(tab) {
 
@@ -56,7 +57,12 @@ function handleSignup(event) {
     const password = document.getElementById("signupPassword").value;
 
     if (!USERNAME_REGEX.test(username)) {
-        showAuthError("Username must be 3–20 characters: letters, numbers, periods, underscores only.");
+        showAuthError("Username must be 5–20 characters: letters, numbers, periods, underscores only.");
+        return false;
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+        showAuthError("Password must be 8+ characters with an uppercase letter, lowercase letter, number, and special character.");
         return false;
     }
 
@@ -127,13 +133,23 @@ firebase.auth().onAuthStateChanged(user => {
 
         logoutBtn.classList.add("hidden");
 
-        authBox.classList.remove("hidden-form");
+        if (authInitialized && !notes.classList.contains("hidden")) {
 
-        home.style.display = "";
-        home.classList.remove("hide-home");
+            /* Just logged out this session — animate notes fading out, then reveal login screen */
+            leaveApp();
 
-        notes.classList.remove("notes-visible");
-        notes.classList.add("hidden");
+        } else {
+
+            /* Initial load with no session — show login screen immediately, no animation */
+            authBox.classList.remove("hidden-form");
+
+            home.style.display = "";
+            home.classList.remove("hide-home");
+
+            notes.classList.remove("notes-visible");
+            notes.classList.add("hidden");
+
+        }
 
     }
 
@@ -154,6 +170,36 @@ function enterApp() {
         home.style.display = "none";
         notes.classList.remove("hidden");
         notes.classList.add("notes-visible");
+    }, 400);
+
+}
+
+/* Leave App (Logout transition) */
+
+function leaveApp() {
+
+    const home = document.getElementById("homeScreen");
+    const notes = document.getElementById("notesSection");
+    const authBox = document.getElementById("authBox");
+
+    notes.classList.add("leaving");
+
+    setTimeout(() => {
+
+        notes.classList.remove("notes-visible");
+        notes.classList.remove("leaving");
+        notes.classList.add("hidden");
+
+        authBox.classList.remove("hidden-form");
+        switchAuthTab("login");
+
+        home.style.display = "";
+
+        /* Force a reflow so removing hide-home actually triggers a transition, not an instant jump */
+        void home.offsetWidth;
+
+        home.classList.remove("hide-home");
+
     }, 400);
 
 }

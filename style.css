@@ -401,6 +401,20 @@ background:rgba(255,255,255,.15);
 
 /* Notes Section */
 
+#notesSection{
+
+transition:opacity .4s ease, transform .4s ease;
+
+}
+
+#notesSection.leaving{
+
+opacity:0;
+
+transform:translateY(16px);
+
+}
+
 #notesSection.hidden{
 
 display:none;
