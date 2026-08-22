@@ -221,7 +221,7 @@ max-width:320px;
 
 .hidden-form{
 
-display:none;
+display:none !important;
 
 }
 
@@ -647,6 +647,48 @@ box-shadow:
 
 
 
+#logoutBtn{
+
+border:none;
+outline:none;
+
+padding:10px 16px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-size:14px;
+font-weight:bold;
+
+transition:.3s;
+
+background:rgba(255,255,255,.2);
+
+color:white;
+
+}
+
+#logoutBtn:hover{
+
+transform:translateY(-2px);
+
+}
+
+#logoutBtn.hidden{
+
+display:none;
+
+}
+
+.dark #logoutBtn{
+
+background:#333;
+
+color:white;
+
+}
+
 /* Top Bar */
 
 
@@ -656,6 +698,8 @@ box-shadow:
 display:flex;
 
 justify-content:flex-end;
+
+gap:10px;
 
 }
 

@@ -32,6 +32,7 @@
 <div class="container">
 
     <div class="top-bar">
+        <button id="logoutBtn" class="hidden" onclick="handleLogout()">🚪 Log out</button>
         <button id="themeToggle">🌙 Dark Mode</button>
     </div>
 
@@ -64,14 +65,6 @@
 
             <p id="authError" class="auth-error"></p>
 
-        </div>
-
-        <!-- Logged-in: Welcome + Enter -->
-        <div id="welcomeBox" class="hidden-form">
-            <p class="home-subtitle" id="welcomeText"></p>
-            <button id="enterBtn" onclick="enterApp()">Enter →</button>
-            <br>
-            <button id="logoutLink" onclick="handleLogout()">Log out</button>
         </div>
 
     </div>

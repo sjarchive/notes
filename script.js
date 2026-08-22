@@ -93,40 +93,51 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
-
-    firebase.auth().signOut().then(() => {
-
-        const notes = document.getElementById("notesSection");
-        const home = document.getElementById("homeScreen");
-
-        notes.classList.remove("notes-visible");
-        notes.classList.add("hidden");
-
-        home.style.display = "";
-        home.classList.remove("hide-home");
-
-    });
-
+    firebase.auth().signOut();
 }
+
+let authInitialized = false;
 
 firebase.auth().onAuthStateChanged(user => {
 
     const authBox = document.getElementById("authBox");
-    const welcomeBox = document.getElementById("welcomeBox");
-    const welcomeText = document.getElementById("welcomeText");
+    const home = document.getElementById("homeScreen");
+    const notes = document.getElementById("notesSection");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     if (user) {
 
-        authBox.classList.add("hidden-form");
-        welcomeBox.classList.remove("hidden-form");
-        welcomeText.textContent = `Welcome, ${user.displayName || "back"} 👋`;
+        logoutBtn.classList.remove("hidden");
+
+        if (!authInitialized) {
+
+            /* Already had a session from before (page reload) — skip straight to notes, no animation */
+            home.style.display = "none";
+            notes.classList.remove("hidden");
+            notes.classList.add("notes-visible");
+
+        } else {
+
+            /* Just logged in this session — animate the transition into notes */
+            enterApp();
+
+        }
 
     } else {
 
+        logoutBtn.classList.add("hidden");
+
         authBox.classList.remove("hidden-form");
-        welcomeBox.classList.add("hidden-form");
+
+        home.style.display = "";
+        home.classList.remove("hide-home");
+
+        notes.classList.remove("notes-visible");
+        notes.classList.add("hidden");
 
     }
+
+    authInitialized = true;
 
 });
 
