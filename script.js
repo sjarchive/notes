@@ -1,7 +1,23 @@
 /* ===================== Auth ===================== */
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_.]{5,10}$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{5,10}$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,20}$/;
+
+function togglePassword(fieldId, btn) {
+
+    const input = document.getElementById(fieldId);
+
+    if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = "🙈";
+        btn.setAttribute("aria-label", "Hide password");
+    } else {
+        input.type = "password";
+        btn.textContent = "👁️";
+        btn.setAttribute("aria-label", "Show password");
+    }
+
+}
 
 function switchAuthTab(tab) {
 
@@ -67,7 +83,7 @@ function handleSignup(event) {
     const password = document.getElementById("signupPassword").value;
 
     if (!USERNAME_REGEX.test(username)) {
-        showAuthError("Username must be 5–10 characters: letters, numbers, periods, underscores only.");
+        showAuthError("Username must be 5–10 characters: letters, numbers, underscores only.");
         return false;
     }
 

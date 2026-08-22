@@ -52,14 +52,20 @@
 
             <form id="loginForm" class="auth-form" onsubmit="return handleLogin(event)">
                 <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
-                <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                <div class="password-wrap">
+                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                    <button type="button" class="toggle-password" aria-label="Show password" onclick="togglePassword('loginPassword', this)">👁️</button>
+                </div>
                 <button type="submit" class="auth-submit">Log In</button>
             </form>
 
             <form id="signupForm" class="auth-form hidden-form" onsubmit="return handleSignup(event)">
                 <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username" required>
-                <input type="password" id="signupPassword" placeholder="Choose a password" autocomplete="new-password" required>
-                <p class="auth-hint">Username: 5–10 characters (letters, numbers, periods, underscores).<br>Password: 8–20 characters with uppercase, lowercase, number & special character.</p>
+                <div class="password-wrap">
+                    <input type="password" id="signupPassword" placeholder="Choose a password" autocomplete="new-password" required>
+                    <button type="button" class="toggle-password" aria-label="Show password" onclick="togglePassword('signupPassword', this)">👁️</button>
+                </div>
+                <p class="auth-hint">Username: 5–10 characters (letters, numbers, underscores).<br>Password: 8–20 characters with uppercase, lowercase, number & special character.</p>
                 <button type="submit" class="auth-submit">Sign Up</button>
             </form>
 

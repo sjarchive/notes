@@ -301,6 +301,56 @@ font-size:15px;
 
 outline:none;
 
+width:100%;
+
+}
+
+.password-wrap{
+
+position:relative;
+
+display:flex;
+
+}
+
+.password-wrap input{
+
+padding-right:44px;
+
+}
+
+.toggle-password{
+
+position:absolute;
+
+right:6px;
+
+top:50%;
+
+transform:translateY(-50%);
+
+background:transparent;
+
+border:none;
+
+outline:none;
+
+font-size:16px;
+
+cursor:pointer;
+
+padding:6px;
+
+line-height:1;
+
+opacity:.8;
+
+}
+
+.toggle-password:hover{
+
+opacity:1;
+
 }
 
 .auth-form input::placeholder{
