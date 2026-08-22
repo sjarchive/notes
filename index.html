@@ -40,7 +40,40 @@
         <div class="home-icon">📚</div>
         <h1>B.Ed. I Year Notes</h1>
         <p class="home-subtitle">First year notes, all in one place</p>
-        <button id="enterBtn" onclick="enterApp()">Enter →</button>
+
+        <!-- Logged-out: Login / Sign Up -->
+        <div id="authBox">
+
+            <div class="auth-tabs">
+                <button type="button" id="loginTabBtn" class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
+                <button type="button" id="signupTabBtn" class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <form id="loginForm" class="auth-form" onsubmit="return handleLogin(event)">
+                <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
+                <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                <button type="submit" class="auth-submit">Log In</button>
+            </form>
+
+            <form id="signupForm" class="auth-form hidden-form" onsubmit="return handleSignup(event)">
+                <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username" required>
+                <input type="password" id="signupPassword" placeholder="Choose a password" autocomplete="new-password" required>
+                <p class="auth-hint">3–20 characters: letters, numbers, periods, underscores.</p>
+                <button type="submit" class="auth-submit">Sign Up</button>
+            </form>
+
+            <p id="authError" class="auth-error"></p>
+
+        </div>
+
+        <!-- Logged-in: Welcome + Enter -->
+        <div id="welcomeBox" class="hidden-form">
+            <p class="home-subtitle" id="welcomeText"></p>
+            <button id="enterBtn" onclick="enterApp()">Enter →</button>
+            <br>
+            <button id="logoutLink" onclick="handleLogout()">Log out</button>
+        </div>
+
     </div>
 
     <!-- Notes Section (hidden until Enter is clicked) -->
@@ -247,6 +280,11 @@
 <button id="topBtn">↑</button>
 
 <div id="toast"></div>
+
+<!-- Firebase (Authentication) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script src="script.js"></script>
     
