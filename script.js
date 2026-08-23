@@ -240,19 +240,14 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         closeAuthModal();
 
-        if (!authInitialized) {
-
-            /* Already had a session from before (page reload) — skip straight to notes, no animation */
-            home.style.display = "none";
-            notes.classList.remove("hidden");
-            notes.classList.add("notes-visible");
-
-        } else {
+        if (authInitialized) {
 
             /* Just logged in this session — animate the transition into notes */
             enterApp();
 
         }
+
+        /* Existing session found on page load — stay on the landing screen (with profile icon shown), don't auto-skip to notes */
 
     } else {
 
