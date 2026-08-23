@@ -32,7 +32,13 @@
 <div class="container">
 
     <div class="top-bar">
-        <button id="logoutBtn" class="hidden" onclick="handleLogout()">🚪 Log out</button>
+        <div id="profileContainer" class="profile-container hidden">
+            <button id="profileBtn" class="profile-btn" onclick="toggleProfileMenu(event)" aria-label="Account menu">👤</button>
+            <div id="profileMenu" class="profile-menu hidden-form">
+                <p id="profileUsername" class="profile-username"></p>
+                <button class="profile-logout" onclick="handleLogout()">🚪 Log out</button>
+            </div>
+        </div>
         <button id="themeToggle">🌙 Dark Mode</button>
     </div>
 
@@ -41,9 +47,14 @@
         <div class="home-icon">📚</div>
         <h1>B.Ed. I Year Notes</h1>
         <p class="home-subtitle">First year notes, all in one place</p>
+        <button id="enterBtn" onclick="handleEnterClick()">Enter →</button>
+    </div>
 
-        <!-- Logged-out: Login / Sign Up -->
-        <div id="authBox">
+    <!-- Login / Sign Up Modal -->
+    <div id="authModalOverlay" class="modal-overlay hidden-form" onclick="closeAuthModalOnOverlay(event)">
+        <div class="auth-modal" onclick="event.stopPropagation()">
+
+            <button type="button" class="modal-close" onclick="closeAuthModal()" aria-label="Close">✕</button>
 
             <div class="auth-tabs">
                 <button type="button" id="loginTabBtn" class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
@@ -72,7 +83,6 @@
             <p id="authError" class="auth-error"></p>
 
         </div>
-
     </div>
 
     <!-- Notes Section (hidden until Enter is clicked) -->

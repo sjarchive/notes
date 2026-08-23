@@ -166,8 +166,52 @@ function handleLogout() {
     supabaseClient.auth.signOut();
 }
 
+function handleEnterClick() {
+
+    if (currentSession) {
+        enterApp();
+    } else {
+        openAuthModal();
+    }
+
+}
+
+function openAuthModal() {
+
+    document.getElementById("authModalOverlay").classList.remove("hidden-form");
+    switchAuthTab("login");
+
+}
+
+function closeAuthModal() {
+    document.getElementById("authModalOverlay").classList.add("hidden-form");
+}
+
+function closeAuthModalOnOverlay(event) {
+    if (event.target.id === "authModalOverlay") {
+        closeAuthModal();
+    }
+}
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    document.getElementById("profileMenu").classList.toggle("hidden-form");
+}
+
+document.addEventListener("click", (event) => {
+
+    const container = document.getElementById("profileContainer");
+    const menu = document.getElementById("profileMenu");
+
+    if (container && !container.contains(event.target)) {
+        menu.classList.add("hidden-form");
+    }
+
+});
+
 let authInitialized = false;
 let suppressAuthTransition = false;
+let currentSession = null;
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
 
@@ -175,16 +219,26 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         return;
     }
 
+    currentSession = session;
+
     const user = session ? session.user : null;
 
-    const authBox = document.getElementById("authBox");
     const home = document.getElementById("homeScreen");
     const notes = document.getElementById("notesSection");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const profileContainer = document.getElementById("profileContainer");
+    const profileUsername = document.getElementById("profileUsername");
+    const profileMenu = document.getElementById("profileMenu");
 
     if (user) {
 
-        logoutBtn.classList.remove("hidden");
+        const username =
+            (user.user_metadata && user.user_metadata.username) ||
+            user.email.split("@")[0];
+
+        profileUsername.textContent = username;
+        profileContainer.classList.remove("hidden");
+
+        closeAuthModal();
 
         if (!authInitialized) {
 
@@ -202,18 +256,17 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
     } else {
 
-        logoutBtn.classList.add("hidden");
+        profileContainer.classList.add("hidden");
+        profileMenu.classList.add("hidden-form");
 
         if (authInitialized && !notes.classList.contains("hidden")) {
 
-            /* Just logged out this session — animate notes fading out, then reveal login screen */
+            /* Just logged out this session — animate notes fading out, then reveal the landing screen */
             leaveApp();
 
         } else {
 
-            /* Initial load with no session — show login screen immediately, no animation */
-            authBox.classList.remove("hidden-form");
-
+            /* Initial load with no session — show the landing screen immediately, no animation */
             home.style.display = "";
             home.classList.remove("hide-home");
 
@@ -251,7 +304,6 @@ function leaveApp() {
 
     const home = document.getElementById("homeScreen");
     const notes = document.getElementById("notesSection");
-    const authBox = document.getElementById("authBox");
 
     notes.classList.add("leaving");
 
@@ -260,9 +312,6 @@ function leaveApp() {
         notes.classList.remove("notes-visible");
         notes.classList.remove("leaving");
         notes.classList.add("hidden");
-
-        authBox.classList.remove("hidden-form");
-        switchAuthTab("login");
 
         home.style.display = "";
         home.classList.remove("hide-home");
