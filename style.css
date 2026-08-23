@@ -505,6 +505,10 @@ html{
 
 scroll-behavior:smooth;
 
+background:#5b4a99;
+
+overscroll-behavior:none;
+
 }
 
 
@@ -518,6 +522,8 @@ body{
 min-height:100vh;
 
 padding:20px;
+
+overscroll-behavior:none;
 
 
 

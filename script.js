@@ -38,6 +38,18 @@ function switchAuthTab(tab) {
     authError.textContent = "";
     authError.classList.remove("auth-success");
 
+    loginForm.reset();
+    signupForm.reset();
+
+    document.querySelectorAll(".password-wrap input").forEach(input => {
+        input.type = "password";
+    });
+
+    document.querySelectorAll(".toggle-password").forEach(btn => {
+        btn.innerHTML = EYE_ICON;
+        btn.setAttribute("aria-label", "Show password");
+    });
+
     if (tab === "login") {
         loginTabBtn.classList.add("active");
         signupTabBtn.classList.remove("active");
@@ -274,6 +286,7 @@ const toggle = document.getElementById("themeToggle");
 
 if (localStorage.getItem("darkMode") === "true") {
     document.body.classList.add("dark");
+    document.documentElement.style.background = "#121212";
     toggle.textContent = "☀️ Light Mode";
 }
 
@@ -283,6 +296,8 @@ toggle.addEventListener("click", () => {
 
     const dark =
         document.body.classList.contains("dark");
+
+    document.documentElement.style.background = dark ? "#121212" : "";
 
     localStorage.setItem("darkMode", dark);
 
