@@ -360,18 +360,32 @@ async function downloadPDF(file) {
         return;
     }
 
-    const a = document.createElement("a");
+    try {
 
-    a.href = url;
-    a.download = "";
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
 
-    document.body.appendChild(a);
+        const a = document.createElement("a");
 
-    a.click();
+        a.href = blobUrl;
+        a.download = file;
 
-    a.remove();
+        document.body.appendChild(a);
 
-    showToast("✓ Download started");
+        a.click();
+
+        a.remove();
+
+        URL.revokeObjectURL(blobUrl);
+
+        showToast("✓ Download started");
+
+    } catch {
+
+        showToast("⚠️ Download failed");
+
+    }
 
 }
 
