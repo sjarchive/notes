@@ -66,24 +66,23 @@ function showAuthSuccess(message) {
 
 function friendlyAuthError(error) {
 
-    switch (error.code) {
-        case "auth/email-already-in-use":
-            return "That username is already taken.";
-        case "auth/weak-password":
-            return "Password must be at least 6 characters.";
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-        case "auth/invalid-credential":
-            return "Incorrect username or password.";
-        case "auth/invalid-email":
-            return "That username isn't valid.";
-        default:
-            return "Something went wrong. Please try again.";
+    const msg = (error && error.message) ? error.message.toLowerCase() : "";
+
+    if (msg.includes("already registered") || msg.includes("already exists")) {
+        return "That username is already taken.";
     }
+    if (msg.includes("invalid login credentials")) {
+        return "Incorrect username or password.";
+    }
+    if (msg.includes("password")) {
+        return "Password must be at least 6 characters.";
+    }
+
+    return "Something went wrong. Please try again.";
 
 }
 
-function handleSignup(event) {
+async function handleSignup(event) {
 
     event.preventDefault();
 
@@ -104,29 +103,32 @@ function handleSignup(event) {
 
     suppressAuthTransition = true;
 
-    firebase.auth().createUserWithEmailAndPassword(usernameToEmail(username), password)
-        .then(cred => {
-            return cred.user.updateProfile({ displayName: username });
-        })
-        .then(() => {
-            return firebase.auth().signOut();
-        })
-        .then(() => {
-            suppressAuthTransition = false;
-            document.getElementById("signupForm").reset();
-            switchAuthTab("login");
-            showAuthSuccess("Account created! Please log in.");
-        })
-        .catch(error => {
-            suppressAuthTransition = false;
-            showAuthError(friendlyAuthError(error));
-        });
+    const { error } = await supabaseClient.auth.signUp({
+        email: usernameToEmail(username),
+        password: password,
+        options: {
+            data: { username: username }
+        }
+    });
+
+    if (error) {
+        suppressAuthTransition = false;
+        showAuthError(friendlyAuthError(error));
+        return false;
+    }
+
+    await supabaseClient.auth.signOut();
+
+    suppressAuthTransition = false;
+    document.getElementById("signupForm").reset();
+    switchAuthTab("login");
+    showAuthSuccess("Account created! Please log in.");
 
     return false;
 
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
 
     event.preventDefault();
 
@@ -135,27 +137,33 @@ function handleLogin(event) {
 
     showAuthError("");
 
-    firebase.auth().signInWithEmailAndPassword(usernameToEmail(username), password)
-        .catch(error => {
-            showAuthError(friendlyAuthError(error));
-        });
+    const { error } = await supabaseClient.auth.signInWithPassword({
+        email: usernameToEmail(username),
+        password: password
+    });
+
+    if (error) {
+        showAuthError(friendlyAuthError(error));
+    }
 
     return false;
 
 }
 
 function handleLogout() {
-    firebase.auth().signOut();
+    supabaseClient.auth.signOut();
 }
 
 let authInitialized = false;
 let suppressAuthTransition = false;
 
-firebase.auth().onAuthStateChanged(user => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
 
     if (suppressAuthTransition) {
         return;
     }
+
+    const user = session ? session.user : null;
 
     const authBox = document.getElementById("authBox");
     const home = document.getElementById("homeScreen");
@@ -311,19 +319,50 @@ topBtn.addEventListener("click", () => {
 
 /* Preview PDF */
 
-function previewPDF(file) {
+/* File access via Supabase Storage (private bucket) */
 
-    window.open(file, "_blank");
+const ACCESS_LINK_EXPIRY_SECONDS = 60 * 5;    // 5 minutes — clicked immediately by a logged-in user (view/download)
+const SHARE_LINK_EXPIRY_SECONDS = 60 * 30;    // 30 minutes — needs time to reach and be opened by someone else
+
+async function getSignedFileUrl(file, expiresIn) {
+
+    const { data, error } = await supabaseClient
+        .storage
+        .from(NOTES_BUCKET)
+        .createSignedUrl(file, expiresIn);
+
+    if (error) {
+        showToast("⚠️ Couldn't load file");
+        return null;
+    }
+
+    return data.signedUrl;
+
+}
+
+async function previewPDF(file) {
+
+    const url = await getSignedFileUrl(file, ACCESS_LINK_EXPIRY_SECONDS);
+
+    if (url) {
+        window.open(url, "_blank");
+    }
 
 }
 
 /* Download PDF */
 
-function downloadPDF(file) {
+async function downloadPDF(file) {
+
+    const url = await getSignedFileUrl(file, ACCESS_LINK_EXPIRY_SECONDS);
+
+    if (!url) {
+        return;
+    }
 
     const a = document.createElement("a");
 
-    a.href = file;
+    a.href = url;
     a.download = "";
 
     document.body.appendChild(a);
@@ -340,19 +379,17 @@ function downloadPDF(file) {
 
 async function shareFile(file) {
 
-    const url =
-        window.location.origin +
-        window.location.pathname.replace(
-            "index.html",
-            ""
-        ) +
-        file;
+    const url = await getSignedFileUrl(file, SHARE_LINK_EXPIRY_SECONDS);
+
+    if (!url) {
+        return;
+    }
 
     try {
 
         await navigator.clipboard.writeText(url);
 
-        showToast("🔗 Link copied");
+        showToast("🔗 Link copied (valid for 30 minutes)");
 
     } catch {
 
