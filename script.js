@@ -238,6 +238,13 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         profileUsername.textContent = username;
         profileContainer.classList.remove("hidden");
 
+        const manageNotesBtn = document.getElementById("manageNotesBtn");
+        if (user.id === ADMIN_USER_ID) {
+            manageNotesBtn.classList.remove("hidden-form");
+        } else {
+            manageNotesBtn.classList.add("hidden-form");
+        }
+
         closeAuthModal();
 
         if (authInitialized) {
@@ -253,6 +260,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         profileContainer.classList.add("hidden");
         profileMenu.classList.add("hidden-form");
+        document.getElementById("manageNotesBtn").classList.add("hidden-form");
+        closeManageModal();
 
         if (authInitialized && !notes.classList.contains("hidden")) {
 
@@ -317,12 +326,9 @@ function leaveApp() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-/* Subject Counter */
+/* Notes List (subject count is set once the cards finish loading) */
 
-const cards = document.querySelectorAll(".note-card");
-
-document.getElementById("subjectCount").textContent =
-    `Total Subjects: ${cards.length}`;
+loadNotes();
 
 /* Dark Mode */
 
@@ -375,6 +381,252 @@ topBtn.addEventListener("click", () => {
 });
 
 });
+
+/* ===================== Notes List (data-driven) ===================== */
+
+/*
+  Notes are no longer hardcoded in index.html. They live in a "notes" table
+  in Supabase (see notes-setup.sql). This loads that table and builds the
+  cards, so admins can add/remove a subject without touching any code.
+*/
+
+let notesCache = [];
+
+async function loadNotes() {
+
+    const { data, error } = await supabaseClient
+        .from("notes")
+        .select("*")
+        .order("position", { ascending: true });
+
+    if (error) {
+        showToast("⚠️ Couldn't load notes list");
+        return;
+    }
+
+    notesCache = data || [];
+
+    renderNotesGrid();
+    renderManageList();
+
+}
+
+function renderNotesGrid() {
+
+    const grid = document.getElementById("notesGrid");
+
+    grid.innerHTML = "";
+
+    notesCache.forEach(note => {
+
+        const card = document.createElement("div");
+        card.className = "note-card";
+
+        const h2 = document.createElement("h2");
+        h2.innerHTML = `<span class="arrow">▼</span>`;
+        h2.append(note.title);
+        h2.addEventListener("click", () => toggleCard(card));
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const previewBtn = document.createElement("button");
+        previewBtn.className = "preview-btn";
+        previewBtn.setAttribute("aria-label", `View ${note.title} PDF`);
+        previewBtn.textContent = "👁️ View";
+        previewBtn.addEventListener("click", () => previewPDF(note.filename));
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.className = "download-btn";
+        downloadBtn.setAttribute("aria-label", `Download ${note.title} PDF`);
+        downloadBtn.textContent = "⬇️ Download";
+        downloadBtn.addEventListener("click", () => downloadPDF(note.filename));
+
+        const shareBtn = document.createElement("button");
+        shareBtn.className = "share-btn";
+        shareBtn.setAttribute("aria-label", `Share ${note.title} PDF`);
+        shareBtn.textContent = "🔗 Share";
+        shareBtn.addEventListener("click", () => shareFile(note.filename));
+
+        actions.appendChild(previewBtn);
+        actions.appendChild(downloadBtn);
+        actions.appendChild(shareBtn);
+
+        card.appendChild(h2);
+        card.appendChild(actions);
+
+        grid.appendChild(card);
+
+    });
+
+    document.getElementById("subjectCount").textContent =
+        `Total Subjects: ${notesCache.length}`;
+
+}
+
+/* ===================== Manage Notes (admin only) ===================== */
+
+function openManageModal() {
+    document.getElementById("manageModalOverlay").classList.remove("hidden-form");
+    document.getElementById("manageStatus").textContent = "";
+    renderManageList();
+}
+
+function closeManageModal() {
+    document.getElementById("manageModalOverlay").classList.add("hidden-form");
+}
+
+function closeManageModalOnOverlay(event) {
+    if (event.target.id === "manageModalOverlay") {
+        closeManageModal();
+    }
+}
+
+function showManageStatus(message, isError = true) {
+    const el = document.getElementById("manageStatus");
+    el.textContent = message;
+    el.classList.toggle("auth-success", !isError);
+}
+
+/* Turns a title into a safe, unique storage filename, e.g.
+   "Pedagogy of Science" -> "pedagogy_of_science_1725400000000.pdf" */
+function slugifyFilename(title) {
+
+    const base = title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "note";
+
+    return `${base}_${Date.now()}.pdf`;
+
+}
+
+async function handleAddNote(event) {
+
+    event.preventDefault();
+
+    const titleInput = document.getElementById("newNoteTitle");
+    const fileInput = document.getElementById("newNoteFile");
+
+    const title = titleInput.value.trim();
+    const file = fileInput.files[0];
+
+    if (!title) {
+        showManageStatus("Please enter a title.");
+        return false;
+    }
+
+    if (!file || file.type !== "application/pdf") {
+        showManageStatus("Please choose a PDF file.");
+        return false;
+    }
+
+    showManageStatus("Uploading…", false);
+
+    const filename = slugifyFilename(title);
+
+    const { error: uploadError } = await supabaseClient
+        .storage
+        .from(NOTES_BUCKET)
+        .upload(filename, file, { contentType: "application/pdf" });
+
+    if (uploadError) {
+        showManageStatus("Upload failed: " + uploadError.message);
+        return false;
+    }
+
+    const nextPosition = notesCache.length
+        ? Math.max(...notesCache.map(n => n.position ?? 0)) + 1
+        : 0;
+
+    const { error: insertError } = await supabaseClient
+        .from("notes")
+        .insert({ title, filename, position: nextPosition });
+
+    if (insertError) {
+        /* Roll back the uploaded file so it doesn't sit there orphaned */
+        await supabaseClient.storage.from(NOTES_BUCKET).remove([filename]);
+        showManageStatus("Couldn't save note: " + insertError.message);
+        return false;
+    }
+
+    titleInput.value = "";
+    fileInput.value = "";
+
+    showManageStatus("✓ Note added.", false);
+
+    await loadNotes();
+
+    return false;
+
+}
+
+async function handleDeleteNote(id, filename, title) {
+
+    if (!confirm(`Delete "${title}" and its PDF? This can't be undone.`)) {
+        return;
+    }
+
+    const { error: storageError } = await supabaseClient
+        .storage
+        .from(NOTES_BUCKET)
+        .remove([filename]);
+
+    if (storageError) {
+        showManageStatus("Couldn't delete file: " + storageError.message);
+        return;
+    }
+
+    const { error: dbError } = await supabaseClient
+        .from("notes")
+        .delete()
+        .eq("id", id);
+
+    if (dbError) {
+        showManageStatus("Couldn't delete note record: " + dbError.message);
+        return;
+    }
+
+    showManageStatus("✓ Note deleted.", false);
+
+    await loadNotes();
+
+}
+
+function renderManageList() {
+
+    const list = document.getElementById("manageNotesList");
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    notesCache.forEach(note => {
+
+        const row = document.createElement("div");
+        row.className = "manage-note-row";
+
+        const label = document.createElement("span");
+        label.textContent = note.title;
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "manage-delete-btn";
+        del.textContent = "🗑️";
+        del.setAttribute("aria-label", `Delete ${note.title}`);
+        del.addEventListener("click", () => handleDeleteNote(note.id, note.filename, note.title));
+
+        row.appendChild(label);
+        row.appendChild(del);
+
+        list.appendChild(row);
+
+    });
+
+}
 
 /* Preview PDF */
 

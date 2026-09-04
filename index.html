@@ -36,6 +36,7 @@
             <button id="profileBtn" class="profile-btn" onclick="toggleProfileMenu(event)" aria-label="Account menu">👤</button>
             <div id="profileMenu" class="profile-menu hidden-form">
                 <p id="profileUsername" class="profile-username"></p>
+                <button id="manageNotesBtn" class="profile-logout hidden-form" onclick="openManageModal()">🗂️ Manage Notes</button>
                 <button class="profile-logout" onclick="handleLogout()">🚪 Log out</button>
             </div>
         </div>
@@ -85,6 +86,27 @@
         </div>
     </div>
 
+    <!-- Manage Notes Modal (admin only) -->
+    <div id="manageModalOverlay" class="modal-overlay hidden-form" onclick="closeManageModalOnOverlay(event)">
+        <div class="auth-modal" onclick="event.stopPropagation()">
+
+            <button type="button" class="modal-close" onclick="closeManageModal()" aria-label="Close">✕</button>
+
+            <h2 class="manage-title">🗂️ Manage Notes</h2>
+
+            <form id="addNoteForm" class="auth-form" onsubmit="return handleAddNote(event)">
+                <input type="text" id="newNoteTitle" placeholder="Subject title" required>
+                <input type="file" id="newNoteFile" accept="application/pdf" required>
+                <button type="submit" class="auth-submit">⬆️ Upload</button>
+            </form>
+
+            <p id="manageStatus" class="auth-error"></p>
+
+            <div id="manageNotesList" class="manage-notes-list"></div>
+
+        </div>
+    </div>
+
     <!-- Notes Section (hidden until Enter is clicked) -->
     <div id="notesSection" class="hidden">
 
@@ -92,195 +114,7 @@
 
     <p id="subjectCount"></p>
 
-    <div class="notes-grid">
-
-        <div class="note-card">
-        
-        <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Childhood & Growing Up</h2>
-
-            <div class="actions">
-
-                <button
-                    class="preview-btn"
-                    aria-label="View Childhood & Growing Up PDF"
-                    onclick="previewPDF('childhood_growing_up.pdf')">
-                    👁️ View
-                </button>
-            
-               <button
-                    class="download-btn"
-                    aria-label="Download Childhood & Growing Up PDF"
-                    onclick="downloadPDF('childhood_growing_up.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Childhood & Growing Up PDF"
-                    onclick="shareFile('childhood_growing_up.pdf')">
-                    🔗 Share
-               </button>
-
-            </div>
-        </div>
-
-        <div class="note-card">
-        
-        <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Contemporary India & Education</h2>
-
-            <div class="actions">
-
-                <button
-                    class="preview-btn"
-                    aria-label="View Contemporary India & Education PDF"
-                    onclick="previewPDF('contemporary_india_education.pdf')">
-                    👁️ View
-                </button>
-            
-               <button
-                    class="download-btn"
-                    aria-label="Download Contemporary India & Education PDF"
-                    onclick="downloadPDF('contemporary_india_education.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Contemporary India & Education PDF"
-                    onclick="shareFile('contemporary_india_education.pdf')">
-                    🔗 Share
-               </button>
-
-            </div>
-        </div>
-
-         <div class="note-card">
-        
-         <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Learning & Teaching</h2>
-
-             <div class="actions">
-
-                <button
-                    class="preview-btn"
-                    aria-label="View Learning & Teaching PDF"
-                    onclick="previewPDF('learning_teaching.pdf')">
-                    👁️ View
-                </button>
-            
-                <button
-                    class="download-btn"
-                    aria-label="Download Learning & Teaching PDF"
-                    onclick="downloadPDF('learning_teaching.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Learning & Teaching PDF"
-                    onclick="shareFile('learning_teaching.pdf')">
-                    🔗 Share
-               </button>
-
-            </div>
-        </div>
-
-         <div class="note-card">
-        
-         <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Language Across the Curriculum</h2>
-
-            <div class="actions">
-
-                <button
-                    class="preview-btn"
-                    aria-label="View Language Across the Curriculum PDF"
-                    onclick="previewPDF('language_across_the_curriculum.pdf')">
-                    👁️ View
-                </button>
-            
-               <button
-                    class="download-btn"
-                    aria-label="Download Language Across the Curriculum PDF"
-                    onclick="downloadPDF('language_across_the_curriculum.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Language Across the Curriculum PDF"
-                    onclick="shareFile('language_across_the_curriculum.pdf')">
-                    🔗 Share
-               </button>
-
-            </div>
-        </div>
-
-            <div class="note-card">
-        
-            <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Pedagogy of English</h2>
-            
-                <div class="actions">
-            
-                    <button
-                    class="preview-btn"
-                    aria-label="View Pedagogy of English PDF"
-                    onclick="previewPDF('pedagogy_of_english.pdf')">
-                    👁️ View
-                </button>
-            
-               <button
-                    class="download-btn"
-                    aria-label="Download Pedagogy of English PDF"
-                    onclick="downloadPDF('pedagogy_of_english.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Pedagogy of English PDF"
-                    onclick="shareFile('pedagogy_of_english.pdf')">
-                    🔗 Share
-               </button>
-            
-                 </div>
-            </div>
-
-            <div class="note-card">
-        
-            <h2 onclick="toggleCard(this.parentElement)">
-            <span class="arrow">▼</span>Pedagogy of Political Science</h2>
-            
-                <div class="actions">
-            
-                    <button
-                    class="preview-btn"
-                    aria-label="View Pedagogy of Political Science PDF"
-                    onclick="previewPDF('pedagogy_of_political_science.pdf')">
-                    👁️ View
-                </button>
-            
-               <button
-                    class="download-btn"
-                    aria-label="Download Pedagogy of Political Science PDF"
-                    onclick="downloadPDF('pedagogy_of_political_science.pdf')">
-                    ⬇️ Download
-               </button>
-            
-               <button
-                    class="share-btn"
-                    aria-label="Share Pedagogy of Political Science PDF"
-                    onclick="shareFile('pedagogy_of_political_science.pdf')">
-                    🔗 Share
-               </button>
-            
-                 </div>
-            </div>
-
-    </div><!-- end notes-grid -->
+    <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() in script.js -->
 
     </div><!-- end notesSection -->
 

@@ -537,6 +537,118 @@ color:#b6ffb0;
 
 }
 
+.manage-title{
+
+color:white;
+
+font-size:18px;
+
+margin-bottom:16px;
+
+text-align:center;
+
+}
+
+.manage-notes-list{
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+margin-top:16px;
+
+max-height:220px;
+
+overflow-y:auto;
+
+}
+
+.manage-note-row{
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:10px;
+
+background:rgba(255,255,255,.1);
+
+border-radius:10px;
+
+padding:10px 12px;
+
+}
+
+.manage-note-row span{
+
+color:white;
+
+font-size:14px;
+
+word-break:break-word;
+
+}
+
+.manage-delete-btn{
+
+flex-shrink:0;
+
+background:rgba(255,80,80,.25);
+
+border:1px solid rgba(255,120,120,.5);
+
+color:white;
+
+font-size:14px;
+
+padding:6px 10px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.manage-delete-btn:hover{
+
+background:rgba(255,80,80,.45);
+
+}
+
+.auth-form input[type="file"]{
+
+padding:10px 12px;
+
+color:white;
+
+}
+
+.auth-form input[type="file"]::file-selector-button{
+
+border:none;
+
+border-radius:8px;
+
+padding:6px 12px;
+
+margin-right:10px;
+
+background:rgba(255,255,255,.25);
+
+color:white;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
 #logoutLink{
 
 margin-top:14px;

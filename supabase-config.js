@@ -19,6 +19,16 @@ const NOTES_BUCKET = "notes";
    Users never see or type this — they only ever enter a username. */
 const USERNAME_DOMAIN = "bednotes.local";
 
+/*
+  The Supabase Auth "user id" (UUID) of the ONE account allowed to upload/remove
+  notes. Find it in: Supabase Dashboard → Authentication → Users → click your
+  admin account → copy the "User UID".
+  This value being public is fine — it only controls whether the "Manage Notes"
+  button is SHOWN in the UI. The actual protection is the RLS policies in
+  notes-setup.sql, which check this same id server-side.
+*/
+const ADMIN_USER_ID = "3672bb51-947d-4d8d-a1a8-72a4413be136";
+
 function usernameToEmail(username) {
     return username.trim().toLowerCase() + "@" + USERNAME_DOMAIN;
 }
