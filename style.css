@@ -1743,6 +1743,14 @@ h1{
 
     will-change:max-height, opacity, transform;
 
+    /* Avoid a translated compositing layer while the panel grows on touch screens. */
+    transform:none;
+
+    transition:
+    max-height .3s ease,
+    opacity .2s ease,
+    margin-top .3s ease;
+
 }
 
 
@@ -1758,6 +1766,19 @@ h1{
 .actions{
 
     flex-direction:column;
+
+}
+
+.note-card.active .actions{
+
+    /* Clip painting during the opening animation to prevent button-colour flashes. */
+    max-height:180px;
+
+    overflow:hidden;
+
+    border-radius:14px;
+
+    padding:8px;
 
 }
 

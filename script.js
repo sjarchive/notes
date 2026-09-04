@@ -891,7 +891,7 @@ window.addEventListener(
                 .getElementById("splash")
                 .classList.add("hide");
 
-        }, 1200);
+        }, 1600);
 
     }
 );
