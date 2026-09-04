@@ -213,6 +213,17 @@ let authInitialized = false;
 let suppressAuthTransition = false;
 let currentSession = null;
 
+function updateManageNotesButton() {
+
+    const button = document.getElementById("manageNotesBtn");
+    const notes = document.getElementById("notesSection");
+    const user = currentSession ? currentSession.user : null;
+    const shouldShow = user && user.id === ADMIN_USER_ID && !notes.classList.contains("hidden");
+
+    button.classList.toggle("hidden-form", !shouldShow);
+
+}
+
 supabaseClient.auth.onAuthStateChange((event, session) => {
 
     if (suppressAuthTransition) {
@@ -238,12 +249,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         profileUsername.textContent = username;
         profileContainer.classList.remove("hidden");
 
-        const manageNotesBtn = document.getElementById("manageNotesBtn");
-        if (user.id === ADMIN_USER_ID) {
-            manageNotesBtn.classList.remove("hidden-form");
-        } else {
-            manageNotesBtn.classList.add("hidden-form");
-        }
+        updateManageNotesButton();
 
         closeAuthModal();
 
@@ -298,6 +304,7 @@ function enterApp() {
         home.style.display = "none";
         notes.classList.remove("hidden");
         notes.classList.add("notes-visible");
+        updateManageNotesButton();
     }, 400);
 
 }
@@ -310,6 +317,7 @@ function leaveApp() {
     const notes = document.getElementById("notesSection");
 
     notes.classList.add("leaving");
+    updateManageNotesButton();
 
     setTimeout(() => {
 
@@ -488,20 +496,6 @@ function showManageStatus(message, isError = true) {
     el.classList.toggle("auth-success", !isError);
 }
 
-/* Turns a title into a safe, unique storage filename, e.g.
-   "Pedagogy of Science" -> "pedagogy_of_science_1725400000000.pdf" */
-function slugifyFilename(title) {
-
-    const base = title
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "") || "note";
-
-    return `${base}_${Date.now()}.pdf`;
-
-}
-
 async function handleAddNote(event) {
 
     event.preventDefault();
@@ -524,7 +518,8 @@ async function handleAddNote(event) {
 
     showManageStatus("Uploading…", false);
 
-    const filename = slugifyFilename(title);
+    // Keep the storage/download filename exactly as the user selected it.
+    const filename = file.name;
 
     const { error: uploadError } = await supabaseClient
         .storage
@@ -594,6 +589,38 @@ async function handleDeleteNote(id, filename, title) {
 
 }
 
+async function moveNote(noteId, direction) {
+
+    const currentIndex = notesCache.findIndex(note => note.id === noteId);
+    const targetIndex = currentIndex + direction;
+
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= notesCache.length) {
+        return;
+    }
+
+    const current = notesCache[currentIndex];
+    const target = notesCache[targetIndex];
+    const currentPosition = current.position ?? currentIndex;
+    const targetPosition = target.position ?? targetIndex;
+
+    showManageStatus("Saving order…", false);
+
+    const results = await Promise.all([
+        supabaseClient.from("notes").update({ position: targetPosition }).eq("id", current.id),
+        supabaseClient.from("notes").update({ position: currentPosition }).eq("id", target.id)
+    ]);
+
+    const error = results.find(result => result.error)?.error;
+    if (error) {
+        showManageStatus("Couldn't save order: " + error.message);
+        return;
+    }
+
+    showManageStatus("✓ Note order saved.", false);
+    await loadNotes();
+
+}
+
 function renderManageList() {
 
     const list = document.getElementById("manageNotesList");
@@ -612,6 +639,25 @@ function renderManageList() {
         const label = document.createElement("span");
         label.textContent = note.title;
 
+        const controls = document.createElement("div");
+        controls.className = "manage-note-controls";
+
+        const moveUp = document.createElement("button");
+        moveUp.type = "button";
+        moveUp.className = "manage-move-btn";
+        moveUp.textContent = "↑";
+        moveUp.setAttribute("aria-label", `Move ${note.title} up`);
+        moveUp.disabled = notesCache.indexOf(note) === 0;
+        moveUp.addEventListener("click", () => moveNote(note.id, -1));
+
+        const moveDown = document.createElement("button");
+        moveDown.type = "button";
+        moveDown.className = "manage-move-btn";
+        moveDown.textContent = "↓";
+        moveDown.setAttribute("aria-label", `Move ${note.title} down`);
+        moveDown.disabled = notesCache.indexOf(note) === notesCache.length - 1;
+        moveDown.addEventListener("click", () => moveNote(note.id, 1));
+
         const del = document.createElement("button");
         del.type = "button";
         del.className = "manage-delete-btn";
@@ -620,7 +666,10 @@ function renderManageList() {
         del.addEventListener("click", () => handleDeleteNote(note.id, note.filename, note.title));
 
         row.appendChild(label);
-        row.appendChild(del);
+        controls.appendChild(moveUp);
+        controls.appendChild(moveDown);
+        controls.appendChild(del);
+        row.appendChild(controls);
 
         list.appendChild(row);
 

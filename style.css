@@ -753,9 +753,9 @@ background:linear-gradient(
 
 
 
-background-size:300% 300%;
+background-size:200% 200%;
 
-animation:gradientBG 30s ease infinite;
+animation:gradientBG 90s ease-in-out infinite;
 
 
 
@@ -1064,6 +1064,12 @@ background:rgba(255,255,255,.3);
 .dark .profile-menu{
 
 background:rgba(20,20,20,.95);
+
+}
+
+.profile-menu .profile-logout + .profile-logout{
+
+margin-top:8px;
 
 }
 
@@ -1428,6 +1434,60 @@ background:#ff9800;
 
 
 
+.manage-note-controls{
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+flex-shrink:0;
+
+}
+
+.manage-move-btn{
+
+border:1px solid rgba(255,255,255,.35);
+
+background:rgba(255,255,255,.15);
+
+color:white;
+
+font-size:16px;
+
+line-height:1;
+
+padding:6px 9px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.manage-move-btn:hover:not(:disabled){
+
+background:rgba(255,255,255,.3);
+
+}
+
+.manage-move-btn:disabled{
+
+opacity:.4;
+
+cursor:not-allowed;
+
+}
+
+.note-card.active .actions{
+
+overflow:visible;
+
+}
+
 /* Toast */
 
 
@@ -1632,9 +1692,9 @@ color:white;
 
 
 
-        background-size:300% 300%;
+        background-size:200% 200%;
 
-        animation:gradientBG 30s ease infinite;
+        animation:gradientBG 90s ease-in-out infinite;
 
     }
 
