@@ -682,7 +682,7 @@ function renderManageList() {
 /* File access via Supabase Storage (private bucket) */
 
 const ACCESS_LINK_EXPIRY_SECONDS = 60 * 5;    // 5 minutes — clicked immediately by a logged-in user (view/download)
-const SHARE_LINK_EXPIRY_SECONDS = 60 * 30;    // 30 minutes — needs time to reach and be opened by someone else
+const SHARE_LINK_EXPIRY_SECONDS = 60 * 60;    // 1 hour — needs time to reach and be opened by someone else
 
 async function getSignedFileUrl(file, expiresIn) {
 
@@ -763,7 +763,7 @@ async function shareFile(file) {
 
         await navigator.clipboard.writeText(url);
 
-        showToast("🔗 Link copied (valid for 30 minutes)");
+        showToast("🔗 Link copied (valid for 1 hour)");
 
     } catch {
 
