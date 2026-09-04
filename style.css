@@ -755,7 +755,7 @@ background:linear-gradient(
 
 background-size:200% 200%;
 
-animation:gradientBG 50s linear infinite;
+animation:gradientBG 35s linear infinite;
 
 
 
@@ -1205,7 +1205,8 @@ padding:20px;
 
 transition:
 
-all .3s ease;
+background .25s ease,
+box-shadow .25s ease;
 
 }
 
@@ -1694,7 +1695,7 @@ color:white;
 
         background-size:200% 200%;
 
-        animation:gradientBG 50s linear infinite;
+        animation:gradientBG 35s linear infinite;
 
     }
 
@@ -1719,6 +1720,28 @@ h1{
 .note-card h2{
 
     font-size:18px;
+
+}
+
+/* Touch devices can retain :hover after a tap, which made cards shift while
+   their action area was expanding. Keep the tap interaction in one stable spot. */
+.note-card:hover{
+
+    transform:none;
+
+    box-shadow:none;
+
+}
+
+.note-card{
+
+    transform:translateZ(0);
+
+}
+
+.actions{
+
+    will-change:max-height, opacity, transform;
 
 }
 
