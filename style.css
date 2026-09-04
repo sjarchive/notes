@@ -755,7 +755,7 @@ background:linear-gradient(
 
 background-size:200% 200%;
 
-animation:gradientBG 90s ease-in-out infinite;
+animation:gradientBG 50s linear infinite;
 
 
 
@@ -1694,7 +1694,7 @@ color:white;
 
         background-size:200% 200%;
 
-        animation:gradientBG 90s ease-in-out infinite;
+        animation:gradientBG 50s linear infinite;
 
     }
 
