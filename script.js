@@ -679,32 +679,36 @@ function renderManageList() {
 
 /* Preview PDF */
 
-/* File access via Supabase Storage (private bucket) */
+/* File access via our own Worker (see worker.js) — this way a shared or
+   downloaded link only ever shows this site's own domain, never the
+   Supabase project URL or its storage token. */
 
-const ACCESS_LINK_EXPIRY_SECONDS = 60 * 5;    // 5 minutes — clicked immediately by a logged-in user (view/download)
-const SHARE_LINK_EXPIRY_SECONDS = 60 * 60;    // 1 hour — needs time to reach and be opened by someone else
+async function getSignedFileUrl(file, kind) {
 
-async function getSignedFileUrl(file, expiresIn) {
+    const accessToken = currentSession?.access_token;
 
-    const { data, error } = await supabaseClient
-        .storage
-        .from(NOTES_BUCKET)
-        .createSignedUrl(file, expiresIn);
+    if (!accessToken) {
+        showToast("⚠️ Please log in again");
+        return null;
+    }
 
-    if (error) {
+    const res = await fetch(`/sign?file=${encodeURIComponent(file)}&kind=${kind}`, {
+        headers: { "Authorization": `Bearer ${accessToken}` }
+    });
+
+    if (!res.ok) {
         showToast("⚠️ Couldn't load file");
         return null;
     }
 
-    // Route through our own domain instead of exposing the raw Supabase
-    // storage URL — see the /pdf handler in worker.js.
-    return `${location.origin}/pdf?target=${encodeURIComponent(data.signedUrl)}`;
+    const { url } = await res.json();
+    return url;
 
 }
 
 async function previewPDF(file) {
 
-    const url = await getSignedFileUrl(file, ACCESS_LINK_EXPIRY_SECONDS);
+    const url = await getSignedFileUrl(file, "access");
 
     if (url) {
         window.open(url, "_blank");
@@ -716,7 +720,7 @@ async function previewPDF(file) {
 
 async function downloadPDF(file) {
 
-    const url = await getSignedFileUrl(file, ACCESS_LINK_EXPIRY_SECONDS);
+    const url = await getSignedFileUrl(file, "access");
 
     if (!url) {
         return;
@@ -755,7 +759,7 @@ async function downloadPDF(file) {
 
 async function shareFile(file) {
 
-    const url = await getSignedFileUrl(file, SHARE_LINK_EXPIRY_SECONDS);
+    const url = await getSignedFileUrl(file, "share");
 
     if (!url) {
         return;
