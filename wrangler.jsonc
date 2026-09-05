@@ -1,12 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "doe",
+  "main": "worker.js",
   "compatibility_date": "2026-06-07",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/pdf"
+    ]
   },
   "compatibility_flags": [
     "nodejs_compat"

@@ -696,7 +696,9 @@ async function getSignedFileUrl(file, expiresIn) {
         return null;
     }
 
-    return data.signedUrl;
+    // Route through our own domain instead of exposing the raw Supabase
+    // storage URL — see the /pdf handler in worker.js.
+    return `${location.origin}/pdf?target=${encodeURIComponent(data.signedUrl)}`;
 
 }
 
