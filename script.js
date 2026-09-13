@@ -187,11 +187,17 @@ function openAuthModal() {
 
     document.getElementById("authModalOverlay").classList.remove("hidden-form");
     switchAuthTab("login");
+    repositionAuthModal();
 
 }
 
 function closeAuthModal() {
-    document.getElementById("authModalOverlay").classList.add("hidden-form");
+    const overlay = document.getElementById("authModalOverlay");
+    overlay.classList.add("hidden-form");
+    // Clear the inline positioning set by repositionAuthModal() so the
+    // overlay falls back to its default CSS (inset:0) next time it opens.
+    overlay.style.height = "";
+    overlay.style.top = "";
 }
 
 function closeAuthModalOnOverlay(event) {
@@ -199,6 +205,56 @@ function closeAuthModalOnOverlay(event) {
         closeAuthModal();
     }
 }
+
+/* ===================== Keyboard-aware modal positioning =====================
+   interactive-widget=resizes-visual (set in index.html) keeps the layout
+   viewport fixed when the on-screen keyboard opens, which is what stops the
+   whole page (background blobs, backdrop blur, etc.) from reflowing and
+   jittering. The trade-off is that position:fixed elements no longer get
+   pushed up automatically, so the modal has to be repositioned manually.
+   Only the modal overlay itself is resized here — nothing else on the page
+   is touched, so this doesn't reintroduce the original jitter. */
+
+function repositionAuthModal() {
+
+    const overlay = document.getElementById("authModalOverlay");
+
+    if (!overlay || overlay.classList.contains("hidden-form") || !window.visualViewport) {
+        return;
+    }
+
+    const vv = window.visualViewport;
+    overlay.style.height = vv.height + "px";
+    overlay.style.top = vv.offsetTop + "px";
+
+}
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", repositionAuthModal);
+    window.visualViewport.addEventListener("scroll", repositionAuthModal);
+}
+
+/* Fallback for browsers (seen on some Firefox builds) where the keyboard
+   doesn't reliably fire a visualViewport "resize" event: re-run the same
+   positioning logic directly off focus/blur on the auth fields instead,
+   after a short delay to let the keyboard finish animating in/out. Also
+   scrolls the focused field into view, which works even on browsers with
+   no visualViewport support at all. */
+
+document.querySelectorAll("#authModalOverlay input").forEach(input => {
+
+    input.addEventListener("focus", () => {
+        setTimeout(() => {
+            repositionAuthModal();
+            input.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+    });
+
+    input.addEventListener("blur", () => {
+        setTimeout(repositionAuthModal, 300);
+    });
+
+});
 
 function toggleProfileMenu(event) {
     event.stopPropagation();
