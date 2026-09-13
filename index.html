@@ -5,7 +5,1950 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
     <title>B.Ed. I Year Notes</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
-    <link rel="stylesheet" href="style.css">
+    <style>
+/* ===================== Theme Variables =====================
+   Change the site's whole look from here. Everything below (splash,
+   home screen, cards, buttons, dark mode) reads from these.
+*/
+
+:root{
+
+/* Background gradient (splash + page background) */
+--grad-1:#5c6bc0;
+--grad-2:#8e6fd8;
+--grad-3:#c579d4;
+--grad-4:#e18aab;
+
+/* Glass panels (container, cards, modals) */
+--glass-bg:rgba(255,255,255,.15);
+--glass-bg-strong:rgba(255,255,255,.25);
+--glass-border:rgba(255,255,255,.25);
+
+/* Text */
+--text-color:#ffffff;
+--text-muted:rgba(255,255,255,.8);
+
+/* Action buttons */
+--accent-preview:#2196f3;
+--accent-download:#00c853;
+--accent-share:#ff9800;
+
+/* Card left-border accent colors (cycled per card) */
+--card-accent-1:#ff6b6b;
+--card-accent-2:#ffd93d;
+--card-accent-3:#6bcb77;
+--card-accent-4:#4d96ff;
+--card-accent-5:#ff922b;
+--card-accent-6:#cc5de8;
+
+/* Floating decorative blobs */
+--blob-1:#8e6fd8;
+--blob-2:#e18aab;
+--blob-3:#5c6bc0;
+
+/* Dark mode */
+--dark-bg:#121212;
+--dark-grad-1:#181c33;
+--dark-grad-2:#241c38;
+--dark-grad-3:#331f38;
+--dark-grad-4:#3a2130;
+--dark-panel:rgba(28,22,42,.78);
+--dark-panel-strong:rgba(24,19,36,.94);
+--dark-card:rgba(255,255,255,.05);
+--dark-card-hover:rgba(255,255,255,.08);
+
+}
+
+/* Splash Screen */
+
+#splash{
+
+position:fixed;
+
+top:0;
+left:0;
+
+width:100%;
+height:100%;
+
+background:linear-gradient(
+    -45deg,
+    var(--grad-1),
+    var(--grad-2),
+    var(--grad-3),
+    var(--grad-4)
+);
+background:linear-gradient(
+    -45deg in oklch,
+    var(--grad-1),
+    var(--grad-2),
+    var(--grad-3),
+    var(--grad-4)
+);
+
+background-size:400% 400%;
+
+animation:
+gradientBG 15s ease infinite;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+z-index:99999;
+
+transition:
+opacity .6s ease,
+visibility .6s ease;
+
+}
+
+#splash::before{
+
+content:"";
+
+position:absolute;
+
+inset:0;
+
+pointer-events:none;
+
+z-index:-1;
+
+opacity:.035;
+
+mix-blend-mode:overlay;
+
+background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+}
+
+#splash.hide{
+
+opacity:0;
+
+visibility:hidden;
+
+}
+
+.dark #splash{
+
+background:linear-gradient(
+    -45deg,
+    var(--dark-grad-1),
+    var(--dark-grad-2),
+    var(--dark-grad-3),
+    var(--dark-grad-4)
+);
+background:linear-gradient(
+    -45deg in oklch,
+    var(--dark-grad-1),
+    var(--dark-grad-2),
+    var(--dark-grad-3),
+    var(--dark-grad-4)
+);
+
+background-size:400% 400%;
+
+}
+
+.splash-content{
+
+text-align:center;
+
+color:white;
+
+animation:
+fadeIn .8s ease;
+
+}
+
+.splash-icon{
+
+font-size:80px;
+
+margin-bottom:20px;
+
+animation:
+pulse 1.5s infinite;
+
+}
+
+.splash-content h1{
+
+font-size:2.2rem;
+
+margin-bottom:10px;
+
+color:white;
+
+}
+
+.splash-content p{
+
+font-size:16px;
+
+opacity:.9;
+
+}
+
+@keyframes pulse{
+
+0%{
+transform:scale(1);
+}
+
+50%{
+transform:scale(1.1);
+}
+
+100%{
+transform:scale(1);
+}
+
+}
+
+@keyframes fadeIn{
+
+from{
+opacity:0;
+transform:translateY(10px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+/* Home Screen */
+
+#homeScreen{
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+justify-content:center;
+
+padding:60px 20px;
+
+text-align:center;
+
+transition:opacity .4s ease, transform .4s ease;
+
+}
+
+#homeScreen.hide-home{
+
+opacity:0;
+
+transform:translateY(-16px);
+
+}
+
+.home-icon{
+
+font-size:72px;
+
+margin-bottom:20px;
+
+animation:pulse 1.8s infinite;
+
+}
+
+#homeScreen h1{
+
+font-size:2rem;
+
+color:white;
+
+margin-bottom:10px;
+
+}
+
+.home-subtitle{
+
+color:rgba(255,255,255,.8);
+
+font-size:15px;
+
+margin-bottom:36px;
+
+}
+
+#enterBtn{
+
+background:rgba(255,255,255,.2);
+
+border:2px solid rgba(255,255,255,.5);
+
+color:white;
+
+font-size:16px;
+
+font-weight:bold;
+
+padding:14px 36px;
+
+border-radius:50px;
+
+cursor:pointer;
+
+backdrop-filter:blur(8px);
+
+-webkit-backdrop-filter:blur(8px);
+
+transition:all .3s ease;
+
+letter-spacing:.5px;
+
+}
+
+#enterBtn:hover{
+
+background:rgba(255,255,255,.35);
+
+transform:translateY(-3px) scale(1.04);
+
+box-shadow:0 8px 24px rgba(0,0,0,.25);
+
+}
+
+/* Auth Box */
+
+/* Login / Sign Up Modal */
+
+.modal-overlay{
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.55);
+
+backdrop-filter:blur(4px);
+
+-webkit-backdrop-filter:blur(4px);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+padding:20px;
+
+z-index:200;
+
+}
+
+.auth-modal{
+
+position:relative;
+
+width:100%;
+
+max-width:360px;
+
+max-height:100%;
+
+overflow-y:auto;
+
+background:rgba(40,30,70,.85);
+
+border:1px solid rgba(255,255,255,.25);
+
+border-radius:20px;
+
+padding:44px 24px 24px;
+
+backdrop-filter:blur(16px);
+
+-webkit-backdrop-filter:blur(16px);
+
+box-shadow:0 20px 50px rgba(0,0,0,.4);
+
+animation:fadeIn .3s ease;
+
+}
+
+.dark .auth-modal{
+
+background:var(--dark-panel-strong);
+
+}
+
+.modal-close{
+
+position:absolute;
+
+top:10px;
+
+right:12px;
+
+background:transparent;
+
+border:none;
+
+color:rgba(255,255,255,.75);
+
+font-size:16px;
+
+cursor:pointer;
+
+padding:6px;
+
+line-height:1;
+
+}
+
+.modal-close:hover{
+
+color:white;
+
+}
+
+@media(max-width:480px){
+
+.auth-modal{
+
+max-width:100%;
+
+border-radius:20px;
+
+padding:40px 18px 20px;
+
+}
+
+}
+
+.hidden-form{
+
+display:none !important;
+
+}
+
+.auth-tabs{
+
+display:flex;
+
+gap:8px;
+
+margin-bottom:18px;
+
+background:rgba(255,255,255,.1);
+
+border-radius:12px;
+
+padding:4px;
+
+}
+
+.auth-tab{
+
+flex:1;
+
+background:transparent;
+
+border:none;
+
+outline:none;
+
+padding:10px;
+
+border-radius:9px;
+
+color:rgba(255,255,255,.75);
+
+font-weight:bold;
+
+font-size:14px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.auth-tab.active{
+
+background:rgba(255,255,255,.25);
+
+color:white;
+
+}
+
+.auth-form{
+
+display:flex;
+
+flex-direction:column;
+
+gap:12px;
+
+}
+
+.auth-form input{
+
+padding:13px 16px;
+
+border-radius:10px;
+
+border:1px solid rgba(255,255,255,.35);
+
+background:rgba(255,255,255,.12);
+
+color:white;
+
+font-size:15px;
+
+outline:none;
+
+width:100%;
+
+}
+
+.password-wrap{
+
+position:relative;
+
+display:flex;
+
+}
+
+.password-wrap input{
+
+padding-right:44px;
+
+}
+
+.toggle-password{
+
+position:absolute;
+
+right:6px;
+
+top:50%;
+
+transform:translateY(-50%);
+
+background:transparent;
+
+border:none;
+
+outline:none;
+
+cursor:pointer;
+
+padding:6px;
+
+line-height:1;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:rgba(255,255,255,.75);
+
+opacity:.85;
+
+}
+
+.toggle-password:hover{
+
+opacity:1;
+
+color:white;
+
+}
+
+.auth-form input::placeholder{
+
+color:rgba(255,255,255,.65);
+
+}
+
+.auth-form input:focus{
+
+border-color:rgba(255,255,255,.8);
+
+}
+
+.auth-hint{
+
+color:rgba(255,255,255,.65);
+
+font-size:12px;
+
+text-align:left;
+
+margin-top:-4px;
+
+}
+
+.auth-submit{
+
+background:rgba(255,255,255,.25);
+
+border:2px solid rgba(255,255,255,.5);
+
+color:white;
+
+font-size:15px;
+
+font-weight:bold;
+
+padding:13px;
+
+border-radius:50px;
+
+cursor:pointer;
+
+backdrop-filter:blur(8px);
+
+-webkit-backdrop-filter:blur(8px);
+
+transition:all .3s ease;
+
+margin-top:4px;
+
+}
+
+.auth-submit:hover{
+
+background:rgba(255,255,255,.4);
+
+transform:translateY(-2px);
+
+}
+
+.auth-error{
+
+color:#ffb3b3;
+
+font-size:13px;
+
+margin-top:12px;
+
+min-height:16px;
+
+}
+
+.auth-error.auth-success{
+
+color:#b6ffb0;
+
+}
+
+.manage-title{
+
+color:white;
+
+font-size:18px;
+
+margin-bottom:16px;
+
+text-align:center;
+
+}
+
+.manage-notes-list{
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+margin-top:16px;
+
+max-height:220px;
+
+overflow-y:auto;
+
+}
+
+.manage-note-row{
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:10px;
+
+background:rgba(255,255,255,.1);
+
+border-radius:10px;
+
+padding:10px 12px;
+
+}
+
+.manage-note-row span{
+
+color:white;
+
+font-size:14px;
+
+word-break:break-word;
+
+}
+
+.manage-delete-btn{
+
+flex-shrink:0;
+
+background:rgba(255,80,80,.25);
+
+border:1px solid rgba(255,120,120,.5);
+
+color:white;
+
+font-size:14px;
+
+padding:6px 10px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.manage-delete-btn:hover{
+
+background:rgba(255,80,80,.45);
+
+}
+
+.auth-form input[type="file"]{
+
+padding:10px 12px;
+
+color:white;
+
+}
+
+.auth-form input[type="file"]::file-selector-button{
+
+border:none;
+
+border-radius:8px;
+
+padding:6px 12px;
+
+margin-right:10px;
+
+background:rgba(255,255,255,.25);
+
+color:white;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+#logoutLink{
+
+margin-top:14px;
+
+background:transparent;
+
+border:none;
+
+color:rgba(255,255,255,.7);
+
+font-size:13px;
+
+text-decoration:underline;
+
+cursor:pointer;
+
+}
+
+.dark .auth-tab.active{
+
+background:rgba(255,255,255,.15);
+
+}
+
+/* Notes Section */
+
+#notesSection.leaving{
+
+transition:opacity .2s ease;
+
+opacity:0;
+
+}
+
+#notesSection.hidden{
+
+display:none;
+
+}
+
+#notesSection.notes-visible{
+
+animation:fadeIn .5s ease;
+
+}
+
+*{
+
+margin:0;
+
+padding:0;
+
+box-sizing:border-box;
+
+font-family:Arial, Helvetica, sans-serif;
+
+-webkit-tap-highlight-color:transparent;
+
+}
+
+
+
+html{
+
+scroll-behavior:smooth;
+
+background:#5b4a99;
+
+overscroll-behavior:none;
+
+}
+
+
+
+/* Disable selection and long-press */
+
+
+
+body{
+
+min-height:100vh;
+
+padding:20px;
+
+overscroll-behavior:none;
+
+
+
+background:linear-gradient(
+
+    -45deg,
+
+    var(--grad-1),
+
+    var(--grad-2),
+
+    var(--grad-3),
+
+    var(--grad-4)
+
+);
+
+background:linear-gradient(
+
+    -45deg in oklch,
+
+    var(--grad-1),
+
+    var(--grad-2),
+
+    var(--grad-3),
+
+    var(--grad-4)
+
+);
+
+
+background-size:100% 100%;
+
+animation:none;
+
+
+
+display:flex;
+
+justify-content:center;
+
+
+
+-webkit-touch-callout:none;
+
+-webkit-user-select:none;
+
+-moz-user-select:none;
+
+-ms-user-select:none;
+
+user-select:none;
+
+
+
+overflow-x:hidden;
+
+
+
+}
+
+
+
+a,
+
+button,
+
+img{
+
+-webkit-user-drag:none;
+
+user-drag:none;
+
+}
+
+
+
+@keyframes gradientBG{
+
+0%{
+
+background-position:0% 50%;
+
+}
+
+50%{
+
+background-position:100% 50%;
+
+}
+
+100%{
+
+background-position:0% 50%;
+
+}
+
+}
+
+
+
+/* Floating Background Blobs */
+
+
+
+.circle{
+
+position:fixed;
+
+border-radius:50%;
+
+filter:blur(70px);
+
+opacity:.6;
+
+z-index:-1;
+
+}
+
+
+
+.c1{
+
+width:260px;
+
+height:260px;
+
+background:var(--blob-1);
+
+top:10%;
+
+left:5%;
+
+}
+
+
+
+.c2{
+
+width:320px;
+
+height:320px;
+
+background:var(--blob-2);
+
+bottom:10%;
+
+right:5%;
+
+}
+
+
+
+.c3{
+
+width:220px;
+
+height:220px;
+
+background:var(--blob-3);
+
+top:40%;
+
+left:45%;
+
+}
+
+/* Subtle grain over the gradient. Large smooth color fields can show visible
+   banding/stepping (the "diagonal lines" effect); a faint noise layer breaks
+   that up without changing the perceived color. */
+body::before{
+
+content:"";
+
+position:fixed;
+
+inset:0;
+
+pointer-events:none;
+
+z-index:-1;
+
+opacity:.035;
+
+mix-blend-mode:overlay;
+
+background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+}
+
+
+
+/* Main Container */
+
+
+
+.container{
+
+width:100%;
+
+max-width:900px;
+
+
+
+background:rgba(255,255,255,.15);
+
+
+
+backdrop-filter:blur(16px);
+
+-webkit-backdrop-filter:blur(16px);
+
+
+
+border:1px solid rgba(255,255,255,.25);
+
+
+
+border-radius:20px;
+
+
+
+padding:30px;
+
+
+
+box-shadow:
+
+    0 8px 32px rgba(0,0,0,.25);
+
+
+
+}
+
+
+
+.profile-container{
+
+position:relative;
+
+}
+
+.profile-btn{
+
+width:40px;
+
+height:40px;
+
+border-radius:50%;
+
+border:2px solid rgba(255,255,255,.5);
+
+background:rgba(255,255,255,.2);
+
+color:white;
+
+font-size:18px;
+
+cursor:pointer;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+transition:.3s;
+
+}
+
+.profile-btn:hover{
+
+background:rgba(255,255,255,.35);
+
+transform:translateY(-2px);
+
+}
+
+.profile-container.hidden{
+
+display:none;
+
+}
+
+.profile-menu{
+
+position:absolute;
+
+top:calc(100% + 10px);
+
+left:0;
+
+min-width:180px;
+
+background:rgba(40,30,70,.9);
+
+border:1px solid rgba(255,255,255,.25);
+
+border-radius:14px;
+
+padding:14px;
+
+backdrop-filter:blur(14px);
+
+-webkit-backdrop-filter:blur(14px);
+
+box-shadow:0 10px 30px rgba(0,0,0,.35);
+
+z-index:50;
+
+}
+
+.profile-username{
+
+color:white;
+
+font-weight:bold;
+
+font-size:14px;
+
+padding-bottom:10px;
+
+margin-bottom:10px;
+
+border-bottom:1px solid rgba(255,255,255,.2);
+
+word-break:break-word;
+
+}
+
+.profile-logout{
+
+width:100%;
+
+border:none;
+
+outline:none;
+
+padding:9px 12px;
+
+border-radius:9px;
+
+cursor:pointer;
+
+font-size:13px;
+
+font-weight:bold;
+
+transition:.3s;
+
+background:rgba(255,255,255,.15);
+
+color:white;
+
+}
+
+.profile-logout:hover{
+
+background:rgba(255,255,255,.3);
+
+}
+
+.dark .profile-menu{
+
+background:var(--dark-panel-strong);
+
+}
+
+.profile-menu .profile-logout + .profile-logout{
+
+margin-top:8px;
+
+}
+
+/* Top Bar */
+
+
+
+.top-bar{
+
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+}
+
+#themeToggle{
+
+margin-left:auto;
+
+}
+
+
+
+#themeToggle{
+
+border:none;
+
+outline:none;
+
+
+
+padding:10px 16px;
+
+
+
+border-radius:10px;
+
+
+
+cursor:pointer;
+
+
+
+font-size:14px;
+
+font-weight:bold;
+
+
+
+transition:.3s;
+
+
+
+}
+
+
+
+#themeToggle:hover{
+
+transform:translateY(-2px);
+
+}
+
+
+
+/* Heading */
+
+
+
+h1{
+
+text-align:center;
+
+color:white;
+
+margin:20px 0;
+
+}
+
+
+
+#subjectCount{
+
+text-align:center;
+
+color:white;
+
+margin-bottom:25px;
+
+font-size:15px;
+
+}
+
+
+
+/* Cards */
+
+
+
+.notes-grid{
+
+display:grid;
+
+gap:25px;
+
+padding:10px 0;
+
+}
+
+
+
+.note-card{
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+min-height:70px;
+
+background:rgba(255,255,255,.12);
+
+border:1px solid rgba(255,255,255,.15);
+
+border-left:4px solid transparent;
+
+border-radius:16px;
+
+padding:20px;
+
+transition:
+
+background .25s ease,
+box-shadow .25s ease,
+transform .25s ease,
+padding-bottom .3s ease;
+
+will-change:transform;
+
+}
+
+.note-card:nth-child(1){ border-left-color:var(--card-accent-1); }
+.note-card:nth-child(2){ border-left-color:var(--card-accent-2); }
+.note-card:nth-child(3){ border-left-color:var(--card-accent-3); }
+.note-card:nth-child(4){ border-left-color:var(--card-accent-4); }
+.note-card:nth-child(5){ border-left-color:var(--card-accent-5); }
+.note-card:nth-child(6){ border-left-color:var(--card-accent-6); }
+
+
+
+.note-card.active{
+
+
+
+padding-bottom:24px;
+
+
+
+}
+
+
+
+.note-card:hover,
+.note-card.raised{
+
+transform:translateY(-6px);
+
+
+
+box-shadow:
+
+    0 10px 30px rgba(0,0,0,.25);
+
+
+
+background:rgba(255,255,255,.18);
+
+
+
+}
+
+
+
+.note-card h2{
+
+color:white;
+
+font-size:20px;
+
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+cursor:pointer;
+
+margin-bottom:0;
+
+}
+
+/* Buttons */
+
+/* .actions is now the animated grid track: its height comes from
+   grid-template-rows (0fr -> 1fr), which the browser can animate without
+   recomputing layout each frame, unlike max-height. .actions-inner is the
+   actual flex box holding the buttons; it clips to whatever the track's
+   current height is via overflow:hidden + min-height:0. */
+
+.actions{
+
+display:grid;
+
+grid-template-rows:0fr;
+
+opacity:0;
+
+transform:translateY(-8px) translateZ(0);
+
+pointer-events:none;
+
+transition:
+grid-template-rows .3s ease,
+opacity .25s ease,
+transform .25s ease,
+margin-top .25s ease;
+
+will-change:grid-template-rows, opacity, transform;
+
+}
+
+.note-card.active .actions{
+
+grid-template-rows:1fr;
+
+opacity:1;
+
+transform:translateY(0);
+
+pointer-events:auto;
+
+margin-top:15px;
+
+}
+
+.actions-inner{
+
+display:flex;
+
+flex-wrap:wrap;
+
+gap:10px;
+
+overflow:hidden;
+
+min-height:0;
+
+padding:4px;
+
+}
+
+.actions-inner.overflow-visible{
+
+overflow:visible;
+
+}
+
+
+
+.arrow{
+
+
+
+font-size:14px;
+
+
+
+transition:.3s;
+
+
+
+}
+
+
+
+.actions a,
+
+.actions button{
+
+    
+
+position:relative;
+
+    
+
+overflow:hidden;
+
+
+
+border:none;
+
+outline:none;
+
+
+
+text-decoration:none;
+
+
+
+padding:11px 16px;
+
+
+
+border-radius:10px;
+
+
+
+color:white;
+
+
+
+font-size:14px;
+
+font-weight:bold;
+
+
+
+cursor:pointer;
+
+touch-action:manipulation;
+
+
+
+transition:.3s;
+
+
+
+}
+
+
+
+.actions a:hover,
+
+.actions button:hover{
+
+
+
+transform:
+
+translateY(-2px)
+
+scale(1.02);
+
+
+
+box-shadow:
+
+0 6px 15px rgba(0,0,0,.2);
+
+
+
+}
+
+
+
+.preview-btn{
+
+background:var(--accent-preview);
+
+}
+
+
+
+.download-btn{
+
+background:var(--accent-download);
+
+}
+
+
+
+.share-btn{
+
+background:var(--accent-share);
+
+}
+
+.actions button:disabled{
+
+    opacity:.6;
+
+    cursor:default;
+
+}
+
+
+
+.manage-note-controls{
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+flex-shrink:0;
+
+}
+
+.manage-move-btn{
+
+border:1px solid rgba(255,255,255,.35);
+
+background:rgba(255,255,255,.15);
+
+color:white;
+
+font-size:16px;
+
+line-height:1;
+
+padding:6px 9px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.manage-move-btn:hover:not(:disabled){
+
+background:rgba(255,255,255,.3);
+
+}
+
+.manage-move-btn:disabled{
+
+opacity:.4;
+
+cursor:not-allowed;
+
+}
+
+/* Toast */
+
+
+
+#toast{
+
+position:fixed;
+
+
+
+right:20px;
+
+bottom:30px;
+
+
+
+background:#222;
+
+color:white;
+
+
+
+padding:12px 18px;
+
+
+
+border-radius:12px;
+
+
+
+opacity:0;
+
+
+
+transform:
+
+    translateY(20px)
+
+    scale(.95);
+
+
+
+transition:
+
+    opacity .3s ease,
+
+    transform .3s ease;
+
+
+
+pointer-events:none;
+
+
+
+z-index:9999;
+
+}
+
+
+
+#toast.show{
+
+
+
+opacity:1;
+
+
+
+transform:
+
+    translateY(0)
+
+    scale(1);
+
+
+
+}
+
+
+
+/* Scroll Button */
+
+
+
+#topBtn{
+
+position:fixed;
+
+
+
+bottom:20px;
+
+right:20px;
+
+
+
+width:50px;
+
+height:50px;
+
+
+
+border:none;
+
+border-radius:50%;
+
+
+
+font-size:20px;
+
+
+
+cursor:pointer;
+
+
+
+display:none;
+
+
+
+background:rgba(255,255,255,.25);
+
+color:white;
+
+backdrop-filter:blur(8px);
+
+-webkit-backdrop-filter:blur(8px);
+
+
+
+box-shadow:
+
+    0 4px 15px rgba(0,0,0,.3);
+
+
+
+}
+
+
+
+/* Dark Mode */
+
+
+
+.dark{
+
+background:linear-gradient(
+    -45deg,
+    var(--dark-grad-1),
+    var(--dark-grad-2),
+    var(--dark-grad-3),
+    var(--dark-grad-4)
+) !important;
+
+background:linear-gradient(
+    -45deg in oklch,
+    var(--dark-grad-1),
+    var(--dark-grad-2),
+    var(--dark-grad-3),
+    var(--dark-grad-4)
+) !important;
+
+background-size:100% 100% !important;
+
+animation:none !important;
+
+}
+
+
+
+.dark .container{
+
+background:var(--dark-panel);
+
+border:1px solid rgba(255,255,255,.08);
+
+}
+
+
+
+.dark .note-card{
+
+background:var(--dark-card);
+
+}
+
+
+
+.dark .note-card:hover,
+.dark .note-card.raised{
+
+background:var(--dark-card-hover);
+
+}
+
+
+
+.dark #themeToggle{
+
+background:#333;
+
+color:white;
+
+}
+
+
+
+/* Mobile */
+
+
+
+@media(max-width:600px){
+
+
+
+    body{
+
+        padding:15px;
+
+    }
+
+
+
+    .container{
+
+        padding:18px;
+
+    }
+
+
+
+h1{
+
+    font-size:1.6rem;
+
+}
+
+
+
+.note-card h2{
+
+    font-size:18px;
+
+}
+
+/* Touch devices can retain :hover after a tap, which made cards shift while
+   their action area was expanding. Keep the tap interaction in one stable spot.
+   .raised is excluded so the click-driven raise still works on mobile. */
+.note-card:hover:not(.raised){
+
+    transform:none;
+
+    box-shadow:none;
+
+}
+
+.notes-grid{
+
+    gap:20px;
+
+}
+
+
+
+.actions-inner{
+
+    flex-direction:column;
+    flex-wrap:nowrap;
+
+}
+
+.actions a,
+
+.actions button{
+
+    width:100%;
+
+    text-align:center;
+
+}
+
+
+
+}
+
+    </style>
     
     <meta name="theme-color" content="#4568dc">
 </head>
