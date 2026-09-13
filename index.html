@@ -372,7 +372,45 @@ backdrop-filter:blur(16px);
 
 box-shadow:0 20px 50px rgba(0,0,0,.4);
 
-animation:fadeIn .3s ease;
+animation:modalPopIn .3s ease;
+
+}
+
+/* .auth-modal itself only animates transform (never opacity), because
+   animating opacity on an element that also has backdrop-filter is a
+   known cross-browser rendering issue: the blur doesn't render correctly
+   until the animation finishes, causing a flat, unblurred rectangle to
+   flash in first. The fade-in look is instead applied to its direct
+   children below, none of which use backdrop-filter, so they're free
+   to animate opacity safely. */
+
+@keyframes modalPopIn{
+
+from{
+transform:translateY(10px);
+}
+
+to{
+transform:translateY(0);
+}
+
+}
+
+.auth-modal > *{
+
+animation:modalContentFadeIn .3s ease;
+
+}
+
+@keyframes modalContentFadeIn{
+
+from{
+opacity:0;
+}
+
+to{
+opacity:1;
+}
 
 }
 
