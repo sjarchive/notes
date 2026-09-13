@@ -2066,6 +2066,24 @@ h1{
         <button id="enterBtn" onclick="handleEnterClick()">Enter →</button>
     </div>
 
+    <!-- Notes Section (hidden until Enter is clicked) -->
+    <div id="notesSection" class="hidden">
+
+    <h1>📚 B.Ed. I Year Notes</h1>
+
+    <p id="subjectCount"></p>
+
+    <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() in script.js -->
+
+    </div><!-- end notesSection -->
+
+</div><!-- end container -->
+
+    <!-- Login / Sign Up + Manage Notes modals: direct children of <body>. An
+    ancestor with backdrop-filter (.container) becomes the containing block for
+    position:fixed descendants, which made the overlay dim/blur only cover the
+    container box with visible boundaries instead of the whole page. -->
+
     <!-- Login / Sign Up Modal -->
     <div id="authModalOverlay" class="modal-overlay hidden-form" onclick="closeAuthModalOnOverlay(event)">
         <div class="auth-modal-pop">
@@ -2126,18 +2144,7 @@ h1{
         </div>
     </div>
 
-    <!-- Notes Section (hidden until Enter is clicked) -->
-    <div id="notesSection" class="hidden">
 
-    <h1>📚 B.Ed. I Year Notes</h1>
-
-    <p id="subjectCount"></p>
-
-    <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() in script.js -->
-
-    </div><!-- end notesSection -->
-
-</div><!-- end container -->
 
 <button id="topBtn">↑</button>
 
