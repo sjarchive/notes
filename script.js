@@ -134,6 +134,13 @@ async function handleSignup(event) {
     suppressAuthTransition = false;
     document.getElementById("signupForm").reset();
     switchAuthTab("login");
+
+    // switchAuthTab() resets both forms (clearing any value), so the
+    // username must be filled in AFTER it runs, not before.
+    document.getElementById("loginUsername").value = username;
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("loginPassword").focus();
+
     showAuthSuccess("Account created! Please log in.");
 
     return false;

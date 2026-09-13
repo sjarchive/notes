@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
     <title>B.Ed. I Year Notes</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <link rel="stylesheet" href="style.css">
@@ -63,18 +63,18 @@
             </div>
 
             <form id="loginForm" class="auth-form" onsubmit="return handleLogin(event)">
-                <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
+                <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" maxlength="10" required>
                 <div class="password-wrap">
-                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" maxlength="20" required>
                     <button type="button" class="toggle-password" aria-label="Show password" onclick="togglePassword('loginPassword', this)"></button>
                 </div>
                 <button type="submit" class="auth-submit">Log In</button>
             </form>
 
             <form id="signupForm" class="auth-form hidden-form" onsubmit="return handleSignup(event)">
-                <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username" required>
+                <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username" maxlength="10" required>
                 <div class="password-wrap">
-                    <input type="password" id="signupPassword" placeholder="Choose a password" autocomplete="new-password" required>
+                    <input type="password" id="signupPassword" placeholder="Choose a password" autocomplete="new-password" maxlength="20" required>
                     <button type="button" class="toggle-password" aria-label="Show password" onclick="togglePassword('signupPassword', this)"></button>
                 </div>
                 <p class="auth-hint">Username: 5–10 characters (letters, numbers, underscores).<br>Password: 8–20 characters with uppercase, lowercase, number & special character.</p>
