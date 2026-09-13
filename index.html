@@ -1523,6 +1523,17 @@ overflow:visible;
 
 }
 
+/* When collapsed, .actions-inner's own padding still renders even though
+   the 0fr grid row clips its content to nothing, leaving a few pixels of
+   dead space that pushes the h2 title above true center. Dropping the
+   padding while collapsed removes that gap without affecting the expanded
+   (.active) state, where the padding is still needed around the buttons. */
+.note-card:not(.active) .actions-inner{
+
+padding:0;
+
+}
+
 
 
 .arrow{

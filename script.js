@@ -521,13 +521,22 @@ function renderNotesGrid() {
         const h2 = document.createElement("h2");
         h2.innerHTML = `<span class="arrow">▼</span>`;
         h2.append(note.title);
-        h2.addEventListener("click", () => toggleCard(card));
 
-        card.addEventListener("click", () => raiseCard(card));
+        card.addEventListener("click", (event) => {
+            raiseCard(card);
+            // Clicking a preview/download/share button should just run that
+            // button's own action, not also expand/collapse the card.
+            if (event.target.closest(".actions")) {
+                return;
+            }
+            toggleCard(card);
+        });
         // Note: raising used to also fire on touchstart, but that made the
         // "lift" and "expand" animations run out of sync on mobile (lift
         // starts on touch, expand starts later on click) which read as
         // jitter. Letting click drive both keeps them in the same frame.
+        // The whole card (not just the title) is clickable to expand or
+        // collapse it, since toggleCard() is now driven from here too.
 
         // Hovering anywhere on the card raises it — same raiseCard() the
         // click uses, so it also lowers whichever other card was raised
