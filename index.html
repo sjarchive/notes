@@ -346,13 +346,34 @@ z-index:200;
 
 }
 
+/* Pop-in wrapper: the entry transform animation lives HERE, not on
+   .auth-modal, because an element that carries backdrop-filter must never
+   be animated with transform/opacity itself — Chromium then renders the
+   blur region as a flat, un-rounded translucent rectangle with sharp
+   boundaries around the dialog for the duration of the animation (and it
+   can stick after it). A transform on this plain wrapper doesn't touch
+   the child's blur clipping, so the rounded glass renders correctly from
+   the first frame. */
+
+.auth-modal-pop{
+
+width:100%;
+
+max-width:360px;
+
+max-height:100%;
+
+display:flex;
+
+animation:modalPopIn .3s ease;
+
+}
+
 .auth-modal{
 
 position:relative;
 
 width:100%;
-
-max-width:360px;
 
 max-height:100%;
 
@@ -372,17 +393,15 @@ backdrop-filter:blur(16px);
 
 box-shadow:0 20px 50px rgba(0,0,0,.4);
 
-animation:modalPopIn .3s ease;
-
 }
 
-/* .auth-modal itself only animates transform (never opacity), because
-   animating opacity on an element that also has backdrop-filter is a
-   known cross-browser rendering issue: the blur doesn't render correctly
+/* .auth-modal only fades in its direct children (never its own opacity),
+   because animating opacity on an element that also has backdrop-filter is
+   a known cross-browser rendering issue: the blur doesn't render correctly
    until the animation finishes, causing a flat, unblurred rectangle to
-   flash in first. The fade-in look is instead applied to its direct
-   children below, none of which use backdrop-filter, so they're free
-   to animate opacity safely. */
+   flash in first. None of the children use backdrop-filter, so they're
+   free to animate opacity safely. The pop-in motion itself is on the
+   .auth-modal-pop wrapper above. */
 
 @keyframes modalPopIn{
 
@@ -452,9 +471,13 @@ color:white;
 
 @media(max-width:480px){
 
-.auth-modal{
+.auth-modal-pop{
 
 max-width:100%;
+
+}
+
+.auth-modal{
 
 border-radius:20px;
 
@@ -2045,6 +2068,7 @@ h1{
 
     <!-- Login / Sign Up Modal -->
     <div id="authModalOverlay" class="modal-overlay hidden-form" onclick="closeAuthModalOnOverlay(event)">
+        <div class="auth-modal-pop">
         <div class="auth-modal" onclick="event.stopPropagation()">
 
             <button type="button" class="modal-close" onclick="closeAuthModal()" aria-label="Close">✕</button>
@@ -2076,10 +2100,12 @@ h1{
             <p id="authError" class="auth-error"></p>
 
         </div>
+        </div>
     </div>
 
     <!-- Manage Notes Modal (admin only) -->
     <div id="manageModalOverlay" class="modal-overlay hidden-form" onclick="closeManageModalOnOverlay(event)">
+        <div class="auth-modal-pop">
         <div class="auth-modal" onclick="event.stopPropagation()">
 
             <button type="button" class="modal-close" onclick="closeManageModal()" aria-label="Close">✕</button>
@@ -2096,6 +2122,7 @@ h1{
 
             <div id="manageNotesList" class="manage-notes-list"></div>
 
+        </div>
         </div>
     </div>
 
