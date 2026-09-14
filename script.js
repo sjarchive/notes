@@ -183,21 +183,69 @@ function handleEnterClick() {
 
 }
 
+/* ===================== Background scroll lock (modals) =====================
+   The modal overlay is position:fixed, but that alone doesn't stop the page
+   underneath from scrolling on touch devices — a finger dragging on the
+   overlay/modal can still drag the background page with it, which is what
+   caused the janky scrolling behind the login/signup dialog on mobile. This
+   pins the body in place for as long as any modal is open and restores the
+   exact scroll position afterward. A counter is used (instead of a simple
+   boolean) so two modals never stomp on each other's saved scroll position
+   if one were ever opened while another is still open. */
+
+let scrollLockY = 0;
+let scrollLockCount = 0;
+
+function lockBodyScroll() {
+
+    if (scrollLockCount === 0) {
+        scrollLockY = window.scrollY;
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollLockY}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+    }
+
+    scrollLockCount++;
+
+}
+
+function unlockBodyScroll() {
+
+    scrollLockCount = Math.max(0, scrollLockCount - 1);
+
+    if (scrollLockCount === 0) {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.width = "";
+        window.scrollTo(0, scrollLockY);
+    }
+
+}
+
 function openAuthModal() {
 
     document.getElementById("authModalOverlay").classList.remove("hidden-form");
     switchAuthTab("login");
     repositionAuthModal();
+    lockBodyScroll();
 
 }
 
 function closeAuthModal() {
     const overlay = document.getElementById("authModalOverlay");
+    if (overlay.classList.contains("hidden-form")) {
+        return;
+    }
     overlay.classList.add("hidden-form");
     // Clear the inline positioning set by repositionAuthModal() so the
     // overlay falls back to its default CSS (inset:0) next time it opens.
     overlay.style.height = "";
     overlay.style.top = "";
+    unlockBodyScroll();
 }
 
 function closeAuthModalOnOverlay(event) {
@@ -597,10 +645,16 @@ function openManageModal() {
     document.getElementById("manageModalOverlay").classList.remove("hidden-form");
     document.getElementById("manageStatus").textContent = "";
     renderManageList();
+    lockBodyScroll();
 }
 
 function closeManageModal() {
-    document.getElementById("manageModalOverlay").classList.add("hidden-form");
+    const overlay = document.getElementById("manageModalOverlay");
+    if (overlay.classList.contains("hidden-form")) {
+        return;
+    }
+    overlay.classList.add("hidden-form");
+    unlockBodyScroll();
 }
 
 function closeManageModalOnOverlay(event) {
