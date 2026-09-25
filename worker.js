@@ -54,8 +54,29 @@ export default {
     // normal static site — served as before.
     return env.ASSETS.fetch(request);
 
+  },
+
+  /*
+    Runs on the schedule set in wrangler.jsonc ("triggers.crons").
+    Pings Supabase's REST endpoint daily so the free-tier project never
+    sits idle for the 7 days that would trigger an automatic pause.
+    Replaces the old GitHub Actions keepalive workflow — this now runs
+    entirely on Cloudflare, no GitHub dependency needed.
+  */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(pingSupabase());
   }
 };
+
+async function pingSupabase() {
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+    headers: { "apikey": SUPABASE_ANON_KEY }
+  });
+
+  console.log(`Supabase keepalive ping: HTTP ${res.status}`);
+
+}
 
 /* ===================== Supabase token verification ===================== */
 
