@@ -2764,6 +2764,7 @@ function renderNotesGrid() {
 
         card.addEventListener("click", (event) => {
             raiseCard(card);
+            clickRaisedCard = card;
             // Clicking a preview/download/share button should just run that
             // button's own action, not also expand/collapse the card.
             if (event.target.closest(".actions")) {
@@ -2788,6 +2789,16 @@ function renderNotesGrid() {
         // stuck raised after a tap), since it only excludes hover styling
         // when .raised is absent — here we add .raised directly.
         card.addEventListener("mouseenter", () => raiseCard(card));
+        // A hover-driven raise should let go once the cursor leaves —
+        // otherwise the card stays lifted forever after a plain mouse-over.
+        // A click-driven raise is different: it's meant to persist until the
+        // user clicks elsewhere (see raiseCard()/clickRaisedCard below), so
+        // this only lowers the card if it wasn't the one that was clicked.
+        card.addEventListener("mouseleave", () => {
+            if (clickRaisedCard !== card) {
+                card.classList.remove("raised");
+            }
+        });
 
         const actions = document.createElement("div");
         actions.className = "actions";
@@ -3225,6 +3236,10 @@ document.addEventListener(
 
 /* Raised card on click (stays raised until you click elsewhere) */
 
+// Tracks the card (if any) that was last raised by a click, as opposed to a
+// plain hover, so mouseleave knows whether it's allowed to lower it again.
+let clickRaisedCard = null;
+
 function raiseCard(card) {
 
     document.querySelectorAll(".note-card").forEach(c => {
@@ -3245,6 +3260,8 @@ document.addEventListener("click", (event) => {
 
         document.querySelectorAll(".note-card.raised")
             .forEach(c => c.classList.remove("raised"));
+
+        clickRaisedCard = null;
 
     }
 
