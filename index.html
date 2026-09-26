@@ -1419,12 +1419,15 @@ will-change:transform;
 
 }
 
-.note-card:nth-child(1){ border-left-color:var(--card-accent-1); }
-.note-card:nth-child(2){ border-left-color:var(--card-accent-2); }
-.note-card:nth-child(3){ border-left-color:var(--card-accent-3); }
-.note-card:nth-child(4){ border-left-color:var(--card-accent-4); }
-.note-card:nth-child(5){ border-left-color:var(--card-accent-5); }
-.note-card:nth-child(6){ border-left-color:var(--card-accent-6); }
+/* Card left-border accent colors, cycled per card (6n+k so the cycle
+   keeps working past the 6th card instead of leaving later cards
+   with no accent) */
+.note-card:nth-child(6n+1){ border-left-color:var(--card-accent-1); }
+.note-card:nth-child(6n+2){ border-left-color:var(--card-accent-2); }
+.note-card:nth-child(6n+3){ border-left-color:var(--card-accent-3); }
+.note-card:nth-child(6n+4){ border-left-color:var(--card-accent-4); }
+.note-card:nth-child(6n+5){ border-left-color:var(--card-accent-5); }
+.note-card:nth-child(6n+6){ border-left-color:var(--card-accent-6); }
 
 
 
@@ -2321,9 +2324,14 @@ async function handleSignup(event) {
         return false;
     }
 
-    await supabaseClient.auth.signOut();
-
-    suppressAuthTransition = false;
+    try {
+        await supabaseClient.auth.signOut();
+    } finally {
+        /* Always un-suppress, even if signOut itself fails — a flag left
+           stuck on true would silently ignore every later auth state
+           change (including the user's next real login) until reload. */
+        suppressAuthTransition = false;
+    }
     document.getElementById("signupForm").reset();
     switchAuthTab("login");
 
@@ -2457,15 +2465,27 @@ function closeAuthModalOnOverlay(event) {
 
 function repositionAuthModal() {
 
-    const overlay = document.getElementById("authModalOverlay");
-
-    if (!overlay || overlay.classList.contains("hidden-form") || !window.visualViewport) {
+    if (!window.visualViewport) {
         return;
     }
 
     const vv = window.visualViewport;
-    overlay.style.height = vv.height + "px";
-    overlay.style.top = vv.offsetTop + "px";
+
+    /* The Manage Notes modal has the same fixed-overlay + text-input setup
+       as the auth modal, so it needs the same keyboard-aware treatment —
+       reposition whichever overlay is currently open. */
+    ["authModalOverlay", "manageModalOverlay"].forEach(id => {
+
+        const overlay = document.getElementById(id);
+
+        if (!overlay || overlay.classList.contains("hidden-form")) {
+            return;
+        }
+
+        overlay.style.height = vv.height + "px";
+        overlay.style.top = vv.offsetTop + "px";
+
+    });
 
 }
 
@@ -2481,7 +2501,7 @@ if (window.visualViewport) {
    scrolls the focused field into view, which works even on browsers with
    no visualViewport support at all. */
 
-document.querySelectorAll("#authModalOverlay input").forEach(input => {
+document.querySelectorAll("#authModalOverlay input, #manageModalOverlay input").forEach(input => {
 
     input.addEventListener("focus", () => {
         setTimeout(() => {
@@ -2556,9 +2576,13 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         closeAuthModal();
 
-        if (authInitialized) {
+        /* Only animate into the notes on an actual SIGNED_IN event. Passive
+           events like TOKEN_REFRESHED (fired e.g. when a background tab
+           becomes visible again) or USER_UPDATED carry the same non-null
+           session, and letting them through here would yank the user off
+           the landing screen into the notes without any interaction. */
+        if (authInitialized && event === "SIGNED_IN") {
 
-            /* Just logged in this session — animate the transition into notes */
             enterApp();
 
         }
@@ -2848,6 +2872,7 @@ function openManageModal() {
     document.getElementById("manageModalOverlay").classList.remove("hidden-form");
     document.getElementById("manageStatus").textContent = "";
     renderManageList();
+    repositionAuthModal();
     lockBodyScroll();
 }
 
@@ -2857,6 +2882,10 @@ function closeManageModal() {
         return;
     }
     overlay.classList.add("hidden-form");
+    // Clear the inline positioning set by repositionAuthModal() so the
+    // overlay falls back to its default CSS (inset:0) next time it opens.
+    overlay.style.height = "";
+    overlay.style.top = "";
     unlockBodyScroll();
 }
 
@@ -3068,17 +3097,29 @@ async function getSignedFileUrl(file, kind) {
         return null;
     }
 
-    const res = await fetch(`/sign?file=${encodeURIComponent(file)}&kind=${kind}`, {
-        headers: { "Authorization": `Bearer ${accessToken}` }
-    });
+    try {
 
-    if (!res.ok) {
+        const res = await fetch(`/sign?file=${encodeURIComponent(file)}&kind=${kind}`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        if (!res.ok) {
+            showToast("⚠️ Couldn't load file");
+            return null;
+        }
+
+        const { url } = await res.json();
+        return url || null;
+
+    } catch {
+
+        /* A network failure or invalid JSON response used to escape here as
+           an unhandled promise rejection — and in previewPDF() it left the
+           pre-opened blank tab stranded on screen. Report it instead. */
         showToast("⚠️ Couldn't load file");
         return null;
-    }
 
-    const { url } = await res.json();
-    return url;
+    }
 
 }
 
@@ -3112,6 +3153,14 @@ async function downloadPDF(file) {
     try {
 
         const response = await fetch(url);
+
+        /* An expired/failed signed URL still returns a response — but its
+           body is the error page, which used to get saved as
+           "<filename>.pdf" with a success toast. Fail loudly instead. */
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
 
@@ -3164,6 +3213,8 @@ async function shareFile(file) {
 
 /* Toast Notification */
 
+let toastTimer = null;
+
 function showToast(message) {
 
     const toast =
@@ -3173,9 +3224,16 @@ function showToast(message) {
 
     toast.classList.add("show");
 
-    setTimeout(() => {
+    /* Reset the timer on every toast — otherwise a second toast shown soon
+       after the first one got hidden early by the first toast's timeout. */
+    if (toastTimer) {
+        clearTimeout(toastTimer);
+    }
+
+    toastTimer = setTimeout(() => {
 
         toast.classList.remove("show");
+        toastTimer = null;
 
     }, 2500);
 
@@ -3214,19 +3272,23 @@ document.addEventListener(
     "keydown",
     function (e) {
 
+/* Note: e.key is case-sensitive — Ctrl+U arrives as "u" (no Shift is
+   held), so comparing against "U" never matched and the View Source
+   shortcut was never actually blocked. Comparing lowercased also makes
+   the Ctrl+Shift+I/J checks layout-independent. */
         if (
             e.key === "F12" ||
 
             (e.ctrlKey &&
                 e.shiftKey &&
-                e.key === "I") ||
+                e.key.toLowerCase() === "i") ||
 
             (e.ctrlKey &&
                 e.shiftKey &&
-                e.key === "J") ||
+                e.key.toLowerCase() === "j") ||
 
             (e.ctrlKey &&
-                e.key === "U")
+                e.key.toLowerCase() === "u")
         ) {
             e.preventDefault();
         }
@@ -3397,7 +3459,7 @@ window.addEventListener("pageshow", (event) => {
 </script>
     
 <!-- Cloudflare Web Analytics -->
-<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "75d3f999f14d4941af251cb34579233f"}'></script>
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d404b0e7d1d40f68e39ffc16d40ba68"}'></script>
 <!-- End Cloudflare Web Analytics -->
 
 </body>
