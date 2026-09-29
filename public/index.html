@@ -1510,7 +1510,7 @@ transition:
 grid-template-rows .3s ease,
 opacity .25s ease,
 transform .25s ease,
-margin-top .25s ease;
+margin-top .3s ease;
 
 will-change:grid-template-rows, opacity, transform;
 
@@ -2022,10 +2022,11 @@ margin:-4px 0 28px;
 }
 
 /* Smooth year-view transition.
-   The I Year view holds the subject-card accordion, so its entrance is
-   opacity-only: a transform animating on this container changes the
-   containing-block/compositing path of the cards inside and made their
-   expand/collapse accordion jittery on mobile. The card-free views keep
+   The I Year view holds the subject-card accordion, so its entrance uses
+   fadeInOnly — a true opacity-only keyframe (the shared `fadeIn` also
+   animates translateY, and a transform on this container changes the
+   compositing/containing-block path of the cards inside, making their
+   expand/collapse accordion jittery on mobile). The card-free views keep
    the fade+slide. The class is removed on animationend (see showYearView). */
 
 .year-view.entering{
@@ -2033,7 +2034,16 @@ animation:viewIn .3s ease;
 }
 
 .year-view.entering-fade{
-animation:fadeIn .3s ease;
+animation:fadeInOnly .25s ease;
+}
+
+@keyframes fadeInOnly{
+from{
+opacity:0;
+}
+to{
+opacity:1;
+}
 }
 
 @keyframes viewIn{
