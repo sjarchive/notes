@@ -2022,13 +2022,18 @@ margin:-4px 0 28px;
 }
 
 /* Smooth year-view transition.
-   No fill mode: a lingering transform (from fill:both/forwards) on this
-   container changes containing-block/compositing behavior for the subject
-   cards inside and made their expand/collapse accordion feel janky. The
-   class is also removed on animationend (see showYearView). */
+   The I Year view holds the subject-card accordion, so its entrance is
+   opacity-only: a transform animating on this container changes the
+   containing-block/compositing path of the cards inside and made their
+   expand/collapse accordion jittery on mobile. The card-free views keep
+   the fade+slide. The class is removed on animationend (see showYearView). */
 
 .year-view.entering{
 animation:viewIn .3s ease;
+}
+
+.year-view.entering-fade{
+animation:fadeIn .3s ease;
 }
 
 @keyframes viewIn{
@@ -2043,7 +2048,8 @@ transform:translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce){
-.year-view.entering{
+.year-view.entering,
+.year-view.entering-fade{
 animation:none;
 }
 }
@@ -2946,16 +2952,27 @@ function showYearView(viewId) {
     });
 
     const view = document.getElementById(viewId);
-    view.classList.remove("entering");
-    void view.offsetWidth; /* restart the entrance animation */
-    view.classList.add("entering");
 
-    /* Drop the animation class once it finishes so no transform/opacity
-       lingers on the container — keeping the subject cards' accordion
-       transitions on the fast path. */
-    view.addEventListener("animationend", () => {
-        view.classList.remove("entering");
-    }, { once: true });
+    /* Opacity-only entrance for the view holding the subject-card accordion —
+       a transform on its container made the cards' expand/collapse jittery on
+       mobile (see the CSS note above the keyframes). */
+    const enteringClass = viewId === "year1View" ? "entering-fade" : "entering";
+    view.classList.remove("entering", "entering-fade");
+    void view.offsetWidth; /* restart the entrance animation */
+    view.classList.add(enteringClass);
+
+    /* Drop the animation class once the container's own animation finishes so
+       no styles linger. animationend bubbles, so only react to the
+       container's own animation, not ones ending on descendants (e.g. card
+       buttons). */
+    const onEnterEnd = (e) => {
+        if (e.target !== view) {
+            return;
+        }
+        view.classList.remove("entering", "entering-fade");
+        view.removeEventListener("animationend", onEnterEnd);
+    };
+    view.addEventListener("animationend", onEnterEnd);
 
     /* "← All Years" lives in the top bar, next to the profile icon — only show it inside a year view */
     const backBtn = document.getElementById("backToYearsBtn");
