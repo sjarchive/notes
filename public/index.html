@@ -2021,10 +2021,14 @@ letter-spacing:.3px;
 margin:-4px 0 28px;
 }
 
-/* Smooth year-view transition */
+/* Smooth year-view transition.
+   No fill mode: a lingering transform (from fill:both/forwards) on this
+   container changes containing-block/compositing behavior for the subject
+   cards inside and made their expand/collapse accordion feel janky. The
+   class is also removed on animationend (see showYearView). */
 
 .year-view.entering{
-animation:viewIn .3s ease both;
+animation:viewIn .3s ease;
 }
 
 @keyframes viewIn{
@@ -2061,28 +2065,6 @@ background:rgba(255,255,255,.3);
 }
 
 .back-btn:active{
-transform:scale(.96);
-}
-
-.manage-open-btn{
-display:block;
-margin:0 auto 24px;
-background:rgba(255,255,255,.15);
-border:1px solid rgba(255,255,255,.35);
-color:white;
-font-size:13px;
-font-weight:bold;
-padding:9px 20px;
-border-radius:50px;
-cursor:pointer;
-transition:.25s;
-}
-
-.manage-open-btn:hover{
-background:rgba(255,255,255,.3);
-}
-
-.manage-open-btn:active{
 transform:scale(.96);
 }
 
@@ -2261,6 +2243,7 @@ h1{
             <button id="profileBtn" class="profile-btn" onclick="toggleProfileMenu(event)" aria-label="Account menu">👤</button>
             <div id="profileMenu" class="profile-menu hidden-form">
                 <p id="profileUsername" class="profile-username"></p>
+                <button id="manageNotesBtn" class="profile-logout hidden-form">🗂️ Manage Notes</button>
                 <button class="profile-logout" onclick="handleLogout()">🚪 Log out</button>
             </div>
         </div>
@@ -2310,8 +2293,6 @@ h1{
 
     <p class="year-label">I Year</p>
 
-    <button id="manageYear1Btn" class="manage-open-btn hidden-form" onclick="openManageModal(1)">🗂️ Manage Notes</button>
-
     <p id="subjectCount"></p>
 
     <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() -->
@@ -2324,8 +2305,6 @@ h1{
     <h1>📚 B.Ed. Exam Notes</h1>
 
     <p class="year-label">II Year</p>
-
-    <button id="manageYear2Btn" class="manage-open-btn hidden-form" onclick="openManageModal(2)">🗂️ Manage Notes</button>
 
     <div class="coming-soon-card">
         <div class="coming-soon-icon">⏳</div>
@@ -2815,19 +2794,26 @@ let currentSession = null;
 
 function updateManageNotesButton() {
 
-    /* Each year's page has its own "Manage Notes" button, shown only to the
-       admin while that year's view is the active one. */
+    /* Manage Notes stays inside the profile menu, but only appears while the
+       admin is on a year's notes page — and targets that year's modal. */
+    const button = document.getElementById("manageNotesBtn");
     const notes = document.getElementById("notesSection");
     const user = currentSession ? currentSession.user : null;
     const isAdmin = user && user.id === ADMIN_USER_ID && !notes.classList.contains("hidden");
 
-    const btn1 = document.getElementById("manageYear1Btn");
-    const btn2 = document.getElementById("manageYear2Btn");
     const onYear1 = !document.getElementById("year1View").classList.contains("hidden");
     const onYear2 = !document.getElementById("year2View").classList.contains("hidden");
 
-    btn1.classList.toggle("hidden-form", !(isAdmin && onYear1));
-    btn2.classList.toggle("hidden-form", !(isAdmin && onYear2));
+    const activeYear = onYear2 ? 2 : (onYear1 ? 1 : 0);
+
+    button.classList.toggle("hidden-form", !(isAdmin && activeYear));
+
+    if (activeYear) {
+        button.textContent = activeYear === 2
+            ? "🗂️ Manage II Year Notes"
+            : "🗂️ Manage I Year Notes";
+        button.onclick = () => openManageModal(activeYear);
+    }
 
 }
 
@@ -2877,8 +2863,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         profileContainer.classList.add("hidden");
         profileMenu.classList.add("hidden-form");
-        document.getElementById("manageYear1Btn").classList.add("hidden-form");
-        document.getElementById("manageYear2Btn").classList.add("hidden-form");
+        document.getElementById("manageNotesBtn").classList.add("hidden-form");
         closeManageModal();
 
         if (authInitialized && !notes.classList.contains("hidden")) {
@@ -2964,6 +2949,13 @@ function showYearView(viewId) {
     view.classList.remove("entering");
     void view.offsetWidth; /* restart the entrance animation */
     view.classList.add("entering");
+
+    /* Drop the animation class once it finishes so no transform/opacity
+       lingers on the container — keeping the subject cards' accordion
+       transitions on the fast path. */
+    view.addEventListener("animationend", () => {
+        view.classList.remove("entering");
+    }, { once: true });
 
     /* "← All Years" lives in the top bar, next to the profile icon — only show it inside a year view */
     const backBtn = document.getElementById("backToYearsBtn");
