@@ -129,6 +129,12 @@ opacity:0;
 
 visibility:hidden;
 
+/* Stop the perpetual full-screen gradient animation once the splash is
+   gone — background-position animates on the main thread, and letting it
+   run forever eats frame budget the card accordion needs on mobile. */
+
+animation:none;
+
 }
 
 .dark #splash{
@@ -1512,7 +1518,10 @@ opacity .25s ease,
 transform .25s ease,
 margin-top .3s ease;
 
-will-change:grid-template-rows, opacity, transform;
+/* No will-change here: grid-template-rows is not a compositable property,
+   and hinting it force-promoted every card's panel to its own GPU layer —
+   extra layers that had to be re-rasterized each frame of the expand on
+   mobile. Transient promotion during the transition is enough. */
 
 }
 
