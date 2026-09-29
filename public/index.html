@@ -2064,6 +2064,28 @@ background:rgba(255,255,255,.3);
 transform:scale(.96);
 }
 
+.manage-open-btn{
+display:block;
+margin:0 auto 24px;
+background:rgba(255,255,255,.15);
+border:1px solid rgba(255,255,255,.35);
+color:white;
+font-size:13px;
+font-weight:bold;
+padding:9px 20px;
+border-radius:50px;
+cursor:pointer;
+transition:.25s;
+}
+
+.manage-open-btn:hover{
+background:rgba(255,255,255,.3);
+}
+
+.manage-open-btn:active{
+transform:scale(.96);
+}
+
 .coming-soon-card{
 display:flex;
 flex-direction:column;
@@ -2239,7 +2261,6 @@ h1{
             <button id="profileBtn" class="profile-btn" onclick="toggleProfileMenu(event)" aria-label="Account menu">👤</button>
             <div id="profileMenu" class="profile-menu hidden-form">
                 <p id="profileUsername" class="profile-username"></p>
-                <button id="manageNotesBtn" class="profile-logout hidden-form" onclick="openManageModal()">🗂️ Manage Notes</button>
                 <button class="profile-logout" onclick="handleLogout()">🚪 Log out</button>
             </div>
         </div>
@@ -2289,6 +2310,8 @@ h1{
 
     <p class="year-label">I Year</p>
 
+    <button id="manageYear1Btn" class="manage-open-btn hidden-form" onclick="openManageModal(1)">🗂️ Manage Notes</button>
+
     <p id="subjectCount"></p>
 
     <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() -->
@@ -2301,6 +2324,8 @@ h1{
     <h1>📚 B.Ed. Exam Notes</h1>
 
     <p class="year-label">II Year</p>
+
+    <button id="manageYear2Btn" class="manage-open-btn hidden-form" onclick="openManageModal(2)">🗂️ Manage Notes</button>
 
     <div class="coming-soon-card">
         <div class="coming-soon-icon">⏳</div>
@@ -2356,38 +2381,42 @@ h1{
         </div>
     </div>
 
-    <!-- Manage Notes Modal (admin only) -->
-    <div id="manageModalOverlay" class="modal-overlay hidden-form" onclick="closeManageModalOnOverlay(event)">
+    <!-- Manage I Year Notes Modal (admin only, from I Year page) -->
+    <div id="manageModal1Overlay" class="modal-overlay hidden-form" onclick="closeManageModalOnOverlay(event)">
         <div class="auth-modal-pop">
         <div class="auth-modal" onclick="event.stopPropagation()">
 
             <button type="button" class="modal-close" onclick="closeManageModal()" aria-label="Close">✕</button>
 
-            <h2 class="manage-title">🗂️ Manage Notes</h2>
+            <h2 class="manage-title">🗂️ Manage I Year Notes</h2>
 
-            <div class="auth-tabs">
-                <button type="button" id="manageYear1Tab" class="auth-tab active" onclick="switchManageYear(1)">I Year</button>
-                <button type="button" id="manageYear2Tab" class="auth-tab" onclick="switchManageYear(2)">II Year</button>
-            </div>
+            <form id="addNoteForm" class="auth-form" onsubmit="return handleAddNote(event)">
+                <input type="text" id="newNoteTitle" placeholder="Subject title" required>
+                <input type="file" id="newNoteFile" accept="application/pdf" required>
+                <button type="submit" class="auth-submit">⬆️ Upload</button>
+            </form>
 
-            <div id="manageYear1Pane">
-                <form id="addNoteForm" class="auth-form" onsubmit="return handleAddNote(event)">
-                    <input type="text" id="newNoteTitle" placeholder="Subject title" required>
-                    <input type="file" id="newNoteFile" accept="application/pdf" required>
-                    <button type="submit" class="auth-submit">⬆️ Upload</button>
-                </form>
+            <p id="manageStatus" class="auth-error"></p>
 
-                <p id="manageStatus" class="auth-error"></p>
+            <div id="manageNotesList" class="manage-notes-list"></div>
 
-                <div id="manageNotesList" class="manage-notes-list"></div>
-            </div>
+        </div>
+        </div>
+    </div>
 
-            <div id="manageYear2Pane" class="hidden-form">
-                <div class="manage-coming-soon">
-                    <span class="manage-coming-soon-icon">⏳</span>
-                    II year notes are coming soon.<br>
-                    They'll appear here for management once added.
-                </div>
+    <!-- Manage II Year Notes Modal (admin only, from II Year page) -->
+    <div id="manageModal2Overlay" class="modal-overlay hidden-form" onclick="closeManageModalOnOverlay(event)">
+        <div class="auth-modal-pop">
+        <div class="auth-modal" onclick="event.stopPropagation()">
+
+            <button type="button" class="modal-close" onclick="closeManageModal()" aria-label="Close">✕</button>
+
+            <h2 class="manage-title">🗂️ Manage II Year Notes</h2>
+
+            <div class="manage-coming-soon">
+                <span class="manage-coming-soon-icon">⏳</span>
+                II year notes are coming soon.<br>
+                They'll appear here for management once added.
             </div>
 
         </div>
@@ -2722,7 +2751,7 @@ function repositionAuthModal() {
     /* The Manage Notes modal has the same fixed-overlay + text-input setup
        as the auth modal, so it needs the same keyboard-aware treatment —
        reposition whichever overlay is currently open. */
-    ["authModalOverlay", "manageModalOverlay"].forEach(id => {
+    ["authModalOverlay", "manageModal1Overlay", "manageModal2Overlay"].forEach(id => {
 
         const overlay = document.getElementById(id);
 
@@ -2749,7 +2778,7 @@ if (window.visualViewport) {
    scrolls the focused field into view, which works even on browsers with
    no visualViewport support at all. */
 
-document.querySelectorAll("#authModalOverlay input, #manageModalOverlay input").forEach(input => {
+document.querySelectorAll("#authModalOverlay input, #manageModal1Overlay input").forEach(input => {
 
     input.addEventListener("focus", () => {
         setTimeout(() => {
@@ -2786,12 +2815,19 @@ let currentSession = null;
 
 function updateManageNotesButton() {
 
-    const button = document.getElementById("manageNotesBtn");
+    /* Each year's page has its own "Manage Notes" button, shown only to the
+       admin while that year's view is the active one. */
     const notes = document.getElementById("notesSection");
     const user = currentSession ? currentSession.user : null;
-    const shouldShow = user && user.id === ADMIN_USER_ID && !notes.classList.contains("hidden");
+    const isAdmin = user && user.id === ADMIN_USER_ID && !notes.classList.contains("hidden");
 
-    button.classList.toggle("hidden-form", !shouldShow);
+    const btn1 = document.getElementById("manageYear1Btn");
+    const btn2 = document.getElementById("manageYear2Btn");
+    const onYear1 = !document.getElementById("year1View").classList.contains("hidden");
+    const onYear2 = !document.getElementById("year2View").classList.contains("hidden");
+
+    btn1.classList.toggle("hidden-form", !(isAdmin && onYear1));
+    btn2.classList.toggle("hidden-form", !(isAdmin && onYear2));
 
 }
 
@@ -2841,7 +2877,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         profileContainer.classList.add("hidden");
         profileMenu.classList.add("hidden-form");
-        document.getElementById("manageNotesBtn").classList.add("hidden-form");
+        document.getElementById("manageYear1Btn").classList.add("hidden-form");
+        document.getElementById("manageYear2Btn").classList.add("hidden-form");
         closeManageModal();
 
         if (authInitialized && !notes.classList.contains("hidden")) {
@@ -2934,25 +2971,15 @@ function showYearView(viewId) {
         backBtn.classList.toggle("hidden", viewId === "yearSelectView");
     }
 
+    /* Keep the per-year Manage buttons in sync with the active view */
+    updateManageNotesButton();
+
     window.scrollTo({ top: 0, behavior: "instant" });
 
 }
 
 function showYearSelect() {
     showYearView("yearSelectView");
-}
-
-/* ===================== Manage Notes year tabs ===================== */
-
-function switchManageYear(year) {
-
-    document.getElementById("manageYear1Tab").classList.toggle("active", year === 1);
-    document.getElementById("manageYear2Tab").classList.toggle("active", year === 2);
-    document.getElementById("manageYear1Pane").classList.toggle("hidden-form", year !== 1);
-    document.getElementById("manageYear2Pane").classList.toggle("hidden-form", year !== 2);
-
-    showManageStatus("");
-
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -3171,30 +3198,41 @@ function renderNotesGrid() {
 
 /* ===================== Manage Notes (admin only) ===================== */
 
-function openManageModal() {
-    document.getElementById("manageModalOverlay").classList.remove("hidden-form");
-    switchManageYear(1);
+function openManageModal(year) {
+
+    const overlayId = year === 2 ? "manageModal2Overlay" : "manageModal1Overlay";
+    document.getElementById(overlayId).classList.remove("hidden-form");
     document.getElementById("manageStatus").textContent = "";
     renderManageList();
     repositionAuthModal();
     lockBodyScroll();
+
 }
 
 function closeManageModal() {
-    const overlay = document.getElementById("manageModalOverlay");
-    if (overlay.classList.contains("hidden-form")) {
-        return;
-    }
-    overlay.classList.add("hidden-form");
-    // Clear the inline positioning set by repositionAuthModal() so the
-    // overlay falls back to its default CSS (inset:0) next time it opens.
-    overlay.style.height = "";
-    overlay.style.top = "";
-    unlockBodyScroll();
+
+    /* Close whichever manage overlay (I or II year) is currently open */
+    ["manageModal1Overlay", "manageModal2Overlay"].forEach(id => {
+
+        const overlay = document.getElementById(id);
+
+        if (overlay.classList.contains("hidden-form")) {
+            return;
+        }
+
+        overlay.classList.add("hidden-form");
+        // Clear the inline positioning set by repositionAuthModal() so the
+        // overlay falls back to its default CSS (inset:0) next time it opens.
+        overlay.style.height = "";
+        overlay.style.top = "";
+        unlockBodyScroll();
+
+    });
+
 }
 
 function closeManageModalOnOverlay(event) {
-    if (event.target.id === "manageModalOverlay") {
+    if (event.target.id === "manageModal1Overlay" || event.target.id === "manageModal2Overlay") {
         closeManageModal();
     }
 }
