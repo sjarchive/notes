@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
-    <title>B.Ed. I Year Notes</title>
+    <title>B.Ed. Exam Notes</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <style>
 /* ===================== Theme Variables =====================
@@ -1932,6 +1932,153 @@ color:white;
 
 }
 
+/* Year Selection (I / II year cards) */
+
+.hidden{
+display:none;
+}
+
+.year-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:25px;
+padding:10px 0 20px;
+}
+
+.year-card{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+min-height:160px;
+background:rgba(255,255,255,.12);
+border:1px solid rgba(255,255,255,.15);
+border-left:4px solid var(--card-accent-4);
+border-radius:16px;
+padding:24px 16px;
+cursor:pointer;
+transition:
+background .25s ease,
+box-shadow .25s ease,
+transform .25s ease;
+}
+
+.year-card:hover{
+transform:translateY(-6px);
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+background:rgba(255,255,255,.18);
+}
+
+.year-card-icon{
+font-size:40px;
+margin-bottom:12px;
+}
+
+.year-card h2{
+color:white;
+font-size:20px;
+margin-bottom:6px;
+}
+
+.year-card p{
+color:var(--text-muted);
+font-size:14px;
+}
+
+.year-card-soon{
+opacity:.8;
+border-left-color:var(--card-accent-2);
+}
+
+.year-label{
+text-align:center;
+color:var(--text-muted);
+font-size:14px;
+margin-bottom:22px;
+}
+
+.back-btn{
+background:rgba(255,255,255,.15);
+border:1px solid rgba(255,255,255,.35);
+color:white;
+font-size:13px;
+font-weight:bold;
+padding:8px 16px;
+border-radius:50px;
+cursor:pointer;
+transition:.25s;
+}
+
+.back-btn:hover{
+background:rgba(255,255,255,.3);
+}
+
+.coming-soon-card{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+min-height:240px;
+margin:10px 0 20px;
+background:rgba(255,255,255,.08);
+border:2px dashed rgba(255,255,255,.3);
+border-radius:16px;
+padding:30px 20px;
+}
+
+.coming-soon-icon{
+font-size:44px;
+margin-bottom:14px;
+animation:pulse 1.8s infinite;
+}
+
+.coming-soon-card h2{
+color:white;
+font-size:22px;
+margin-bottom:8px;
+}
+
+.coming-soon-card p{
+color:var(--text-muted);
+font-size:15px;
+}
+
+.manage-coming-soon{
+text-align:center;
+color:var(--text-muted);
+font-size:14px;
+padding:34px 10px;
+line-height:1.6;
+}
+
+.manage-coming-soon-icon{
+font-size:34px;
+display:block;
+margin-bottom:10px;
+}
+
+.dark .year-card{
+background:var(--dark-card);
+}
+
+.dark .year-card:hover{
+background:var(--dark-card-hover);
+}
+
+.dark .coming-soon-card{
+background:var(--dark-card);
+}
+
+@media(max-width:600px){
+
+.year-grid{
+grid-template-columns:1fr;
+}
+
+}
+
 
 
 /* Mobile */
@@ -2022,7 +2169,7 @@ h1{
 
         <div class="splash-icon">📚</div>
 
-        <h1>B.Ed. I Year Notes</h1>
+        <h1>B.Ed. Exam Notes</h1>
 
         <p>Loading...</p>
 
@@ -2051,19 +2198,70 @@ h1{
     <!-- Home Screen -->
     <div id="homeScreen">
         <div class="home-icon">📚</div>
-        <h1>B.Ed. I Year Notes</h1>
-        <p class="home-subtitle">First year notes, all in one place</p>
+        <h1>B.Ed. Exam Notes</h1>
+        <p class="home-subtitle">I and II year notes, all in one place</p>
         <button id="enterBtn" onclick="handleEnterClick()">Enter →</button>
     </div>
 
     <!-- Notes Section (hidden until Enter is clicked) -->
     <div id="notesSection" class="hidden">
 
-    <h1>📚 B.Ed. I Year Notes</h1>
+    <!-- Year Selection -->
+    <div id="yearSelectView">
+
+    <h1>📚 B.Ed. Exam Notes</h1>
+
+    <p class="home-subtitle">Select your year</p>
+
+    <div class="year-grid">
+
+        <div class="year-card" onclick="showYearView('year1View')" aria-label="Open I year notes">
+            <div class="year-card-icon">📗</div>
+            <h2>I Year</h2>
+            <p id="year1Count">Loading…</p>
+        </div>
+
+        <div class="year-card year-card-soon" onclick="showYearView('year2View')" aria-label="Open II year notes">
+            <div class="year-card-icon">📙</div>
+            <h2>II Year</h2>
+            <p>Coming soon…</p>
+        </div>
+
+    </div>
+
+    </div><!-- end yearSelectView -->
+
+    <!-- I Year Notes (same interface as before) -->
+    <div id="year1View" class="hidden">
+
+    <button class="back-btn" onclick="showYearSelect()">← All Years</button>
+
+    <h1>📚 B.Ed. Exam Notes</h1>
+
+    <p class="year-label">I Year</p>
 
     <p id="subjectCount"></p>
 
     <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() -->
+
+    </div><!-- end year1View -->
+
+    <!-- II Year (coming soon) -->
+    <div id="year2View" class="hidden">
+
+    <button class="back-btn" onclick="showYearSelect()">← All Years</button>
+
+    <h1>📚 B.Ed. Exam Notes</h1>
+
+    <p class="year-label">II Year</p>
+
+    <div class="coming-soon-card">
+        <div class="coming-soon-icon">⏳</div>
+        <h2>Coming soon…</h2>
+        <p>II year notes will be added here. Stay tuned!</p>
+    </div>
+
+    </div><!-- end year2View -->
 
     </div><!-- end notesSection -->
 
@@ -2120,15 +2318,30 @@ h1{
 
             <h2 class="manage-title">🗂️ Manage Notes</h2>
 
-            <form id="addNoteForm" class="auth-form" onsubmit="return handleAddNote(event)">
-                <input type="text" id="newNoteTitle" placeholder="Subject title" required>
-                <input type="file" id="newNoteFile" accept="application/pdf" required>
-                <button type="submit" class="auth-submit">⬆️ Upload</button>
-            </form>
+            <div class="auth-tabs">
+                <button type="button" id="manageYear1Tab" class="auth-tab active" onclick="switchManageYear(1)">I Year</button>
+                <button type="button" id="manageYear2Tab" class="auth-tab" onclick="switchManageYear(2)">II Year</button>
+            </div>
 
-            <p id="manageStatus" class="auth-error"></p>
+            <div id="manageYear1Pane">
+                <form id="addNoteForm" class="auth-form" onsubmit="return handleAddNote(event)">
+                    <input type="text" id="newNoteTitle" placeholder="Subject title" required>
+                    <input type="file" id="newNoteFile" accept="application/pdf" required>
+                    <button type="submit" class="auth-submit">⬆️ Upload</button>
+                </form>
 
-            <div id="manageNotesList" class="manage-notes-list"></div>
+                <p id="manageStatus" class="auth-error"></p>
+
+                <div id="manageNotesList" class="manage-notes-list"></div>
+            </div>
+
+            <div id="manageYear2Pane" class="hidden-form">
+                <div class="manage-coming-soon">
+                    <span class="manage-coming-soon-icon">⏳</span>
+                    II year notes are coming soon.<br>
+                    They'll appear here for management once added.
+                </div>
+            </div>
 
         </div>
         </div>
@@ -2619,6 +2832,7 @@ function enterApp() {
         home.style.display = "none";
         notes.classList.remove("hidden");
         notes.classList.add("notes-visible");
+        showYearSelect();
         updateManageNotesButton();
     }, 400);
 
@@ -2644,6 +2858,37 @@ function leaveApp() {
         home.classList.remove("hide-home");
 
     }, 200);
+
+}
+
+/* ===================== Year Navigation ===================== */
+
+const YEAR_VIEW_IDS = ["yearSelectView", "year1View", "year2View"];
+
+function showYearView(viewId) {
+
+    YEAR_VIEW_IDS.forEach(id => {
+        document.getElementById(id).classList.toggle("hidden", id !== viewId);
+    });
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+
+}
+
+function showYearSelect() {
+    showYearView("yearSelectView");
+}
+
+/* ===================== Manage Notes year tabs ===================== */
+
+function switchManageYear(year) {
+
+    document.getElementById("manageYear1Tab").classList.toggle("active", year === 1);
+    document.getElementById("manageYear2Tab").classList.toggle("active", year === 2);
+    document.getElementById("manageYear1Pane").classList.toggle("hidden-form", year !== 1);
+    document.getElementById("manageYear2Pane").classList.toggle("hidden-form", year !== 2);
+
+    showManageStatus("");
 
 }
 
@@ -2852,12 +3097,20 @@ function renderNotesGrid() {
     document.getElementById("subjectCount").textContent =
         `Total Subjects: ${notesCache.length}`;
 
+    const year1Count = document.getElementById("year1Count");
+
+    if (year1Count) {
+        year1Count.textContent =
+            `${notesCache.length} subject${notesCache.length === 1 ? "" : "s"} →`;
+    }
+
 }
 
 /* ===================== Manage Notes (admin only) ===================== */
 
 function openManageModal() {
     document.getElementById("manageModalOverlay").classList.remove("hidden-form");
+    switchManageYear(1);
     document.getElementById("manageStatus").textContent = "";
     renderManageList();
     repositionAuthModal();
@@ -3439,6 +3692,8 @@ window.addEventListener("pageshow", (event) => {
     notes.classList.remove("notes-visible");
     notes.classList.remove("leaving");
     notes.classList.add("hidden");
+
+    showYearSelect();
 
     document.getElementById("splash").classList.add("hide");
 
