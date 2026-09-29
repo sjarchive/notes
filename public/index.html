@@ -2628,12 +2628,15 @@ async function handleLogin(event) {
 
     showAuthError("");
 
+    authSubmitIntent = true;
+
     const { error } = await supabaseClient.auth.signInWithPassword({
         email: usernameToEmail(username),
         password: password
     });
 
     if (error) {
+        authSubmitIntent = false;
         showAuthError(friendlyAuthError(error));
     }
 
@@ -2808,6 +2811,11 @@ let authInitialized = false;
 let suppressAuthTransition = false;
 let currentSession = null;
 
+/* Set only while the user is actively submitting the login form. Supabase
+   re-emits SIGNED_IN on its own (e.g. when a backgrounded tab is revived and
+   the stored session is revalidated) — that must NOT auto-enter the app. */
+let authSubmitIntent = false;
+
 function updateManageNotesButton() {
 
     /* Manage Notes stays inside the profile menu, but only appears while the
@@ -2862,14 +2870,24 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
         closeAuthModal();
 
-        /* Only animate into the notes on an actual SIGNED_IN event. Passive
-           events like TOKEN_REFRESHED (fired e.g. when a background tab
-           becomes visible again) or USER_UPDATED carry the same non-null
-           session, and letting them through here would yank the user off
-           the landing screen into the notes without any interaction. */
-        if (authInitialized && event === "SIGNED_IN") {
+        /* Only animate into the notes on a user-initiated SIGNED_IN. Passive
+           events (TOKEN_REFRESHED, or a SIGNED_IN re-emitted when a revived
+           tab revalidates its stored session) must not yank the user into
+           the notes — that was what auto-redirected people to the year
+           select page after leaving the tab for a while. */
+        if (authInitialized && event === "SIGNED_IN" && authSubmitIntent) {
 
-            enterApp();
+            authSubmitIntent = false;
+
+            if (notes.classList.contains("hidden")) {
+                enterApp();
+            }
+
+        } else if (event === "SIGNED_IN") {
+
+            /* Passive or unexpected SIGNED_IN — consume the intent flag so a
+               stale submit can't trigger navigation on a later event. */
+            authSubmitIntent = false;
 
         }
 
@@ -3800,6 +3818,16 @@ window.addEventListener(
 window.addEventListener("pageshow", (event) => {
 
     if (!event.persisted) {
+        return;
+    }
+
+    /* With a valid session the frozen DOM is exactly what the user was
+       looking at — keep it. Resetting to the landing screen here (and the
+       passive SIGNED_IN re-entry that followed) is what bounced people back
+       to the year select page after a while. The reset below only applies
+       when there is no session, which is the original bug this guard fixes:
+       a logged-out DOM reviving straight onto the notes page. */
+    if (currentSession) {
         return;
     }
 
