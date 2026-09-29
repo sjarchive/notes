@@ -1290,6 +1290,8 @@ align-items:center;
 
 gap:10px;
 
+margin-bottom:14px;
+
 }
 
 #themeToggle{
@@ -1970,6 +1972,10 @@ box-shadow:0 10px 30px rgba(0,0,0,.25);
 background:rgba(255,255,255,.18);
 }
 
+.year-card:active{
+transform:translateY(-2px) scale(.97);
+}
+
 .year-card-icon{
 font-size:40px;
 margin-bottom:12px;
@@ -1998,6 +2004,38 @@ font-size:14px;
 margin-bottom:22px;
 }
 
+.year-select-subtitle{
+text-align:center;
+color:var(--text-muted);
+font-size:17px;
+font-weight:600;
+letter-spacing:.3px;
+margin:-4px 0 28px;
+}
+
+/* Smooth year-view transition */
+
+.year-view.entering{
+animation:viewIn .3s ease both;
+}
+
+@keyframes viewIn{
+from{
+opacity:0;
+transform:translateY(14px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+@media (prefers-reduced-motion: reduce){
+.year-view.entering{
+animation:none;
+}
+}
+
 .back-btn{
 background:rgba(255,255,255,.15);
 border:1px solid rgba(255,255,255,.35);
@@ -2012,6 +2050,10 @@ transition:.25s;
 
 .back-btn:hover{
 background:rgba(255,255,255,.3);
+}
+
+.back-btn:active{
+transform:scale(.96);
 }
 
 .coming-soon-card{
@@ -2184,6 +2226,7 @@ h1{
 <div class="container">
 
     <div class="top-bar">
+        <button id="backToYearsBtn" class="back-btn hidden" onclick="showYearSelect()">← All Years</button>
         <div id="profileContainer" class="profile-container hidden">
             <button id="profileBtn" class="profile-btn" onclick="toggleProfileMenu(event)" aria-label="Account menu">👤</button>
             <div id="profileMenu" class="profile-menu hidden-form">
@@ -2207,11 +2250,11 @@ h1{
     <div id="notesSection" class="hidden">
 
     <!-- Year Selection -->
-    <div id="yearSelectView">
+    <div id="yearSelectView" class="year-view">
 
     <h1>📚 B.Ed. Exam Notes</h1>
 
-    <p class="home-subtitle">Select your year</p>
+    <p class="year-select-subtitle">Select your year</p>
 
     <div class="year-grid">
 
@@ -2232,9 +2275,7 @@ h1{
     </div><!-- end yearSelectView -->
 
     <!-- I Year Notes (same interface as before) -->
-    <div id="year1View" class="hidden">
-
-    <button class="back-btn" onclick="showYearSelect()">← All Years</button>
+    <div id="year1View" class="year-view hidden">
 
     <h1>📚 B.Ed. Exam Notes</h1>
 
@@ -2247,9 +2288,7 @@ h1{
     </div><!-- end year1View -->
 
     <!-- II Year (coming soon) -->
-    <div id="year2View" class="hidden">
-
-    <button class="back-btn" onclick="showYearSelect()">← All Years</button>
+    <div id="year2View" class="year-view hidden">
 
     <h1>📚 B.Ed. Exam Notes</h1>
 
@@ -2848,6 +2887,11 @@ function leaveApp() {
     notes.classList.add("leaving");
     updateManageNotesButton();
 
+    const backBtn = document.getElementById("backToYearsBtn");
+    if (backBtn) {
+        backBtn.classList.add("hidden");
+    }
+
     setTimeout(() => {
 
         notes.classList.remove("notes-visible");
@@ -2870,6 +2914,17 @@ function showYearView(viewId) {
     YEAR_VIEW_IDS.forEach(id => {
         document.getElementById(id).classList.toggle("hidden", id !== viewId);
     });
+
+    const view = document.getElementById(viewId);
+    view.classList.remove("entering");
+    void view.offsetWidth; /* restart the entrance animation */
+    view.classList.add("entering");
+
+    /* "← All Years" lives in the top bar, next to the profile icon — only show it inside a year view */
+    const backBtn = document.getElementById("backToYearsBtn");
+    if (backBtn) {
+        backBtn.classList.toggle("hidden", viewId === "yearSelectView");
+    }
 
     window.scrollTo({ top: 0, behavior: "instant" });
 
