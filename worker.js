@@ -50,7 +50,15 @@ export default {
       return handlePdfServe(url, env);
     }
 
-    // Everything else (index.html, script.js, style.css, etc.) is the
+    // Only public/ is deployed as static assets (see wrangler.jsonc), so the
+    // repo's pdfs/ backup folder is never uploaded or served. This route
+    // stays as a guard: real files are only ever served from Supabase
+    // Storage via /pdf/:filename above.
+    if (url.pathname.startsWith("/pdfs/")) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    // Everything else (index.html, etc.) is the
     // normal static site — served as before.
     return env.ASSETS.fetch(request);
 
@@ -139,6 +147,28 @@ function arrayBufferToBase64Url(buf) {
 
 }
 
+// Compare two strings byte by byte without returning early on the first
+// mismatch, so response timing doesn't leak how many leading characters of
+// the token an attacker guessed correctly.
+function timingSafeEqual(a, b) {
+
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+
+  if (aBytes.length !== bBytes.length) {
+    return false;
+  }
+
+  let diff = 0;
+
+  for (let i = 0; i < aBytes.length; i++) {
+    diff |= aBytes[i] ^ bBytes[i];
+  }
+
+  return diff === 0;
+
+}
+
 /* ===================== /sign ===================== */
 
 async function handleSign(request, url, env) {
@@ -186,7 +216,7 @@ async function handlePdfServe(url, env) {
 
   const expected = await signToken(filename, exp, env.WORKER_SECRET);
 
-  if (expected !== token) {
+  if (!timingSafeEqual(expected, token)) {
     return new Response("Forbidden", { status: 403 });
   }
 

@@ -1296,12 +1296,6 @@ gap:10px;
 
 margin-left:auto;
 
-}
-
-
-
-#themeToggle{
-
 border:none;
 
 outline:none;
@@ -1577,8 +1571,6 @@ transition:.3s;
 
 
 
-.actions a,
-
 .actions button{
 
     
@@ -1632,8 +1624,6 @@ transition:.3s;
 }
 
 
-
-.actions a:hover,
 
 .actions button:hover{
 
@@ -2008,8 +1998,6 @@ h1{
 
 }
 
-.actions a,
-
 .actions button{
 
     width:100%;
@@ -2024,7 +2012,7 @@ h1{
 
     </style>
     
-    <meta name="theme-color" content="#4568dc">
+    <meta name="theme-color" content="#5c6bc0">
 </head>
 <body>
 
@@ -2075,7 +2063,7 @@ h1{
 
     <p id="subjectCount"></p>
 
-    <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() in script.js -->
+    <div class="notes-grid" id="notesGrid"></div><!-- populated dynamically by loadNotes() -->
 
     </div><!-- end notesSection -->
 
@@ -2282,7 +2270,7 @@ function friendlyAuthError(error) {
         return "Incorrect username or password.";
     }
     if (msg.includes("password")) {
-        return "Password must be at least 6 characters.";
+        return "Password must be 8–20 characters with uppercase, lowercase, number & special character.";
     }
 
     return "Something went wrong. Please try again.";
