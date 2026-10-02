@@ -1425,8 +1425,6 @@ box-shadow .25s ease,
 transform .25s ease,
 padding-bottom .3s ease;
 
-will-change:transform;
-
 }
 
 /* Card left-border accent colors, cycled per card (6n+k so the cycle
@@ -1508,7 +1506,7 @@ grid-template-rows:0fr;
 
 opacity:0;
 
-transform:translateY(-8px) translateZ(0);
+transform:translateY(-8px);
 
 pointer-events:none;
 
@@ -1518,10 +1516,12 @@ opacity .25s ease,
 transform .25s ease,
 margin-top .3s ease;
 
-/* No will-change here: grid-template-rows is not a compositable property,
-   and hinting it force-promoted every card's panel to its own GPU layer —
-   extra layers that had to be re-rasterized each frame of the expand on
-   mobile. Transient promotion during the transition is enough. */
+/* No will-change and no translateZ(0) here: grid-template-rows is not a
+   compositable property, and forcing the panel onto its own GPU layer (via
+   will-change or a permanent 3D transform) made it re-rasterize on every
+   frame of the expand/collapse on mobile — a layer whose box keeps changing
+   has to be re-rasterized each frame. Transient promotion during the
+   transform transition is enough. */
 
 }
 
@@ -1552,6 +1552,14 @@ overflow:hidden;
 min-height:0;
 
 padding:4px;
+
+/* The collapsed state below drops this padding to 0. Without a transition
+   that flip was an instant 8px height jump at the start of every expand and
+   end of every collapse — visible as a jolt, most of all on mobile. Running
+   it on the same .3s ease as the grid track makes the panel move as one
+   smooth motion instead of snapping. */
+
+transition:padding .3s ease;
 
 }
 
@@ -2179,6 +2187,22 @@ grid-template-columns:1fr;
     .container{
 
         padding:18px;
+
+    }
+
+    /* Halve the glass blur on phones. The container's height changes every
+       frame while a card expands or collapses, so the browser must recompute
+       this backdrop blur over the whole container each frame — the dominant
+       cost of the accordion on mobile. Blur cost scales with the radius, and
+       8px vs 16px is near-identical when seen through a 15%-alpha panel, so
+       this halves the per-frame cost with essentially no visible change.
+       Desktop keeps the full 16px blur (it was never janky there). */
+
+    .container{
+
+        backdrop-filter:blur(8px);
+
+        -webkit-backdrop-filter:blur(8px);
 
     }
 
