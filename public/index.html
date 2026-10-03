@@ -3364,6 +3364,9 @@ function renderNotesGrid() {
 function openManageModal(year) {
 
     const overlayId = year === 2 ? "manageModal2Overlay" : "manageModal1Overlay";
+    // Close the profile menu (Manage / Log out) as the dialog opens. It used
+    // to stay open underneath, then show for a frame when the dialog closed.
+    document.getElementById("profileMenu").classList.add("hidden-form");
     document.getElementById(overlayId).classList.remove("hidden-form");
     document.getElementById("manageStatus").textContent = "";
     renderManageList();
