@@ -1601,6 +1601,20 @@ transform .25s ease;
 
 }
 
+/* Dark mode on phones: drop the container's backdrop blur permanently (not
+   toggled per animation). The dark panel is ~78% opaque and the blobs behind
+   it are already blurred, so the blur is invisible here, but it was being
+   re-sampled/re-rasterised every frame while the container resized, which
+   showed up as a flicker of shade and jittery motion. A static value means
+   there is no layer swap at the start/end of the animation either. */
+body.dark .container{
+
+backdrop-filter:none;
+
+-webkit-backdrop-filter:none;
+
+}
+
 }
 
 .actions-inner{
