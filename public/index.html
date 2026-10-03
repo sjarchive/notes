@@ -899,6 +899,19 @@ font-family:Arial, Helvetica, sans-serif;
 /* overscroll-behavior is deliberately left unset: setting it to "none" here
    (the root scroller) is what disables pull-to-refresh on mobile browsers. */
 
+html.scroll-locked,
+html.scroll-locked body{
+
+overflow:hidden;
+
+}
+
+.modal-overlay{
+
+overscroll-behavior:contain;
+
+}
+
 html{
 
 scroll-behavior:smooth;
@@ -2772,18 +2785,28 @@ function handleEnterClick() {
    boolean) so two modals never stomp on each other's saved scroll position
    if one were ever opened while another is still open. */
 
-let scrollLockY = 0;
 let scrollLockCount = 0;
 
 function lockBodyScroll() {
 
     if (scrollLockCount === 0) {
-        scrollLockY = window.scrollY;
-        document.body.style.position = "fixed";
-        document.body.style.top = `-${scrollLockY}px`;
-        document.body.style.left = "0";
-        document.body.style.right = "0";
-        document.body.style.width = "100%";
+
+        /* Lock by hiding overflow on <html>/<body> instead of making the body
+           position:fixed. Fixing the body changes its box size/position, and
+           un-fixing it on close (plus restoring the scroll offset) forced the
+           whole page — gradient body, blurred blobs, grain layer — to be laid
+           out and repainted in one frame, which showed as a flash. With
+           overflow:hidden nothing moves, so there is nothing to restore. */
+        const root = document.documentElement;
+        const gap = window.innerWidth - root.clientWidth;
+
+        if (gap > 0) {
+            // Desktop: keep layout from shifting when the scrollbar disappears.
+            root.style.paddingRight = gap + "px";
+        }
+
+        root.classList.add("scroll-locked");
+
     }
 
     scrollLockCount++;
@@ -2795,20 +2818,11 @@ function unlockBodyScroll() {
     scrollLockCount = Math.max(0, scrollLockCount - 1);
 
     if (scrollLockCount === 0) {
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.left = "";
-        document.body.style.right = "";
-        document.body.style.width = "";
-        /* html has scroll-behavior:smooth, which would make this restore
-           ANIMATE from the top down to the saved position — the page visibly
-           jumps to the top and scrolls back (the flash on closing a modal).
-           Force an instant jump for this one call. */
+
         const root = document.documentElement;
-        const prevBehavior = root.style.scrollBehavior;
-        root.style.scrollBehavior = "auto";
-        window.scrollTo(0, scrollLockY);
-        root.style.scrollBehavior = prevBehavior;
+        root.classList.remove("scroll-locked");
+        root.style.paddingRight = "";
+
     }
 
 }
@@ -3369,6 +3383,11 @@ function closeManageModal() {
             return;
         }
 
+        // Drop focus first so a mobile keyboard starts closing before the
+        // overlay disappears, instead of resizing the viewport mid-close.
+        if (overlay.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         overlay.classList.add("hidden-form");
         // Clear the inline positioning set by repositionAuthModal() so the
         // overlay falls back to its default CSS (inset:0) next time it opens.
