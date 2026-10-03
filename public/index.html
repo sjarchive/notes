@@ -1310,13 +1310,43 @@ display:flex;
 
 align-items:center;
 
-gap:10px;
+/* Wraps so "← All Years" can sit on its own row beneath the profile icon.
+   Row gap is 0 (the back button carries its own top margin) so the bar's
+   height is unchanged on pages where that button is hidden. */
+flex-wrap:wrap;
+
+gap:0 10px;
 
 margin-bottom:14px;
 
 }
 
+/* Row 1: profile icon (left) + theme toggle (right). The profile icon is
+   now always the first item, so it never shifts when "All Years" appears. */
+.top-bar::after{
+
+content:"";
+
+order:2;
+
+flex-basis:100%;
+
+height:0;
+
+}
+
+/* Row 2: "← All Years", flush-left directly under the profile icon. */
+.top-bar .back-btn{
+
+order:3;
+
+margin-top:10px;
+
+}
+
 #themeToggle{
+
+order:1;
 
 margin-left:auto;
 
