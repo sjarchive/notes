@@ -1572,19 +1572,20 @@ overflow:visible;
 
 /* Phones: the glass container's backdrop blur has to be re-computed over its
    whole (changing-size) area on every frame of the accordion, which is what
-   makes it stutter. While a card is mid-animation the blur is dropped and
-   the panel tint nudged up to match; it comes back the instant the motion
-   ends. The blobs behind are already blurred, so the swap is barely visible.
-   Dark mode is skipped: its panel is ~78% opaque, so the blur is invisible. */
+   makes it stutter. Previously the blur was switched off only while a card
+   animated, and that on/off swap (plus a tint change) was itself the visible
+   shade flash at the start and end of every tap. It is now off permanently on
+   phones with a fixed tint, so nothing changes when the animation runs. The
+   blobs behind are already blurred, so the look is essentially the same. */
 @media(max-width:600px){
 
-html.acc-anim body:not(.dark) .container{
+body:not(.dark) .container{
 
 backdrop-filter:none;
 
 -webkit-backdrop-filter:none;
 
-background:rgba(255,255,255,.2);
+background:rgba(255,255,255,.17);
 
 }
 
