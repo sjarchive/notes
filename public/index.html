@@ -1544,6 +1544,39 @@ overflow:visible;
 
 }
 
+/* Phones: the glass container's backdrop blur has to be re-computed over its
+   whole (changing-size) area on every frame of the accordion, which is what
+   makes it stutter. While a card is mid-animation the blur is dropped and
+   the panel tint nudged up to match; it comes back the instant the motion
+   ends. The blobs behind are already blurred, so the swap is barely visible.
+   Dark mode is skipped: its panel is ~78% opaque, so the blur is invisible. */
+@media(max-width:600px){
+
+html.acc-anim body:not(.dark) .container{
+
+backdrop-filter:none;
+
+-webkit-backdrop-filter:none;
+
+background:rgba(255,255,255,.2);
+
+}
+
+/* Shadows: the tapped card gets its big raised shadow at the same moment its
+   height starts animating. Fading that blurred shadow in AND re-drawing it
+   for a growing box doubled the paint work during the first frames. Here it
+   simply appears at its final state (the lift and background fade still
+   animate), so each frame only re-draws it once. */
+html.acc-anim .note-card{
+
+transition:
+background .25s ease,
+transform .25s ease;
+
+}
+
+}
+
 .actions-inner{
 
 display:flex;
@@ -3771,6 +3804,10 @@ function setCardOpen(card, open) {
     const reduceMotion =
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    const root = document.documentElement;
+    root._accRunning = (root._accRunning || 0) + 1;
+    root.classList.add("acc-anim");
+
     const anim = actions.animate(
         [
             { height: startHeight + "px" },
@@ -3784,7 +3821,28 @@ function setCardOpen(card, open) {
 
     actions._anim = anim;
 
+    let released = false;
+
+    const release = () => {
+
+        if (released) {
+            return;
+        }
+
+        released = true;
+        root._accRunning = Math.max(0, root._accRunning - 1);
+
+        if (root._accRunning === 0) {
+            root.classList.remove("acc-anim");
+        }
+
+    };
+
+    anim.oncancel = release;
+
     anim.onfinish = () => {
+
+        release();
 
         if (actions._anim !== anim) {
             return;
