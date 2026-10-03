@@ -1440,8 +1440,7 @@ transition:
 
 background .25s ease,
 box-shadow .25s ease,
-transform .25s ease,
-padding-bottom .3s ease;
+transform .25s ease;
 
 }
 
@@ -1456,16 +1455,6 @@ padding-bottom .3s ease;
 .note-card:nth-child(6n+6){ border-left-color:var(--card-accent-6); }
 
 
-
-.note-card.active{
-
-
-
-padding-bottom:24px;
-
-
-
-}
 
 
 
@@ -1510,17 +1499,18 @@ margin-bottom:0;
 
 /* Buttons */
 
-/* .actions is now the animated grid track: its height comes from
-   grid-template-rows (0fr -> 1fr), which the browser can animate without
-   recomputing layout each frame, unlike max-height. .actions-inner is the
-   actual flex box holding the buttons; it clips to whatever the track's
-   current height is via overflow:hidden + min-height:0. */
+/* Accordion panel. Its height is animated from JS (see setCardOpen) as a
+   plain pixel value, so each frame changes exactly ONE layout property. The
+   panel's spacing (15px above the buttons, 8px below) lives inside
+   .actions-inner so it rides along inside that single height animation,
+   instead of separate margin/padding transitions all re-laying-out the card
+   at once. Opacity/transform stay on the compositor. */
 
 .actions{
 
-display:grid;
+height:0;
 
-grid-template-rows:0fr;
+overflow:hidden;
 
 opacity:0;
 
@@ -1529,23 +1519,14 @@ transform:translateY(-8px);
 pointer-events:none;
 
 transition:
-grid-template-rows .3s ease,
-opacity .25s ease,
-transform .25s ease,
-margin-top .3s ease;
-
-/* No will-change and no translateZ(0) here: grid-template-rows is not a
-   compositable property, and forcing the panel onto its own GPU layer (via
-   will-change or a permanent 3D transform) made it re-rasterize on every
-   frame of the expand/collapse on mobile — a layer whose box keeps changing
-   has to be re-rasterized each frame. Transient promotion during the
-   transform transition is enough. */
+opacity .3s cubic-bezier(.25,.8,.25,1),
+transform .38s cubic-bezier(.25,.8,.25,1);
 
 }
 
 .note-card.active .actions{
 
-grid-template-rows:1fr;
+height:auto;
 
 opacity:1;
 
@@ -1553,7 +1534,13 @@ transform:translateY(0);
 
 pointer-events:auto;
 
-margin-top:15px;
+}
+
+/* Set once the panel is fully open so button shadows/hover-lift aren't
+   clipped by the panel's edge. */
+.actions.overflow-visible{
+
+overflow:visible;
 
 }
 
@@ -1565,36 +1552,7 @@ flex-wrap:wrap;
 
 gap:10px;
 
-overflow:hidden;
-
-min-height:0;
-
-padding:4px;
-
-/* The collapsed state below drops this padding to 0. Without a transition
-   that flip was an instant 8px height jump at the start of every expand and
-   end of every collapse — visible as a jolt, most of all on mobile. Running
-   it on the same .3s ease as the grid track makes the panel move as one
-   smooth motion instead of snapping. */
-
-transition:padding .3s ease;
-
-}
-
-.actions-inner.overflow-visible{
-
-overflow:visible;
-
-}
-
-/* When collapsed, .actions-inner's own padding still renders even though
-   the 0fr grid row clips its content to nothing, leaving a few pixels of
-   dead space that pushes the h2 title above true center. Dropping the
-   padding while collapsed removes that gap without affecting the expanded
-   (.active) state, where the padding is still needed around the buttons. */
-.note-card:not(.active) .actions-inner{
-
-padding:0;
+padding:19px 4px 8px;
 
 }
 
@@ -1606,11 +1564,19 @@ padding:0;
 
 font-size:14px;
 
+display:inline-block;
 
 
-transition:.3s;
+
+transition:transform .38s cubic-bezier(.25,.8,.25,1);
 
 
+
+}
+
+.note-card.active .arrow{
+
+transform:rotate(180deg);
 
 }
 
@@ -3761,77 +3727,92 @@ document.addEventListener("click", (event) => {
 
 /* Collapsible Cards */
 
+function setCardOpen(card, open) {
+
+    const actions = card.querySelector(".actions");
+
+    if (!actions) {
+        card.classList.toggle("active", open);
+        return;
+    }
+
+    // Measure where the panel is right now (mid-animation included) so a
+    // quick second tap reverses from the current height instead of jumping.
+    const startHeight = actions.getBoundingClientRect().height;
+
+    if (actions._anim) {
+        actions._anim.cancel();
+        actions._anim = null;
+    }
+
+    // Keep overflow clipped while the panel grows/shrinks; it's revealed
+    // again once fully open so button shadows aren't cut off.
+    actions.classList.remove("overflow-visible");
+
+    card.classList.toggle("active", open);
+
+    if (typeof actions.animate !== "function") {
+        if (open) {
+            actions.classList.add("overflow-visible");
+        }
+        return;
+    }
+
+    // Closed: height is 0. Open: height is auto, i.e. its natural height.
+    const endHeight = actions.getBoundingClientRect().height;
+
+    if (Math.abs(endHeight - startHeight) < 0.5) {
+        if (open) {
+            actions.classList.add("overflow-visible");
+        }
+        return;
+    }
+
+    const reduceMotion =
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const anim = actions.animate(
+        [
+            { height: startHeight + "px" },
+            { height: endHeight + "px" }
+        ],
+        {
+            duration: reduceMotion ? 0 : 380,
+            easing: "cubic-bezier(.25,.8,.25,1)"
+        }
+    );
+
+    actions._anim = anim;
+
+    anim.onfinish = () => {
+
+        if (actions._anim !== anim) {
+            return;
+        }
+
+        actions._anim = null;
+
+        if (card.classList.contains("active")) {
+            actions.classList.add("overflow-visible");
+        }
+
+    };
+
+}
+
 function toggleCard(card) {
 
-    const allCards =
-        document.querySelectorAll(".note-card");
+    const willOpen = !card.classList.contains("active");
 
-    allCards.forEach(c => {
+    document.querySelectorAll(".note-card.active").forEach(c => {
 
         if (c !== card) {
-
-            c.classList.remove("active");
-
-            const otherActionsInner = c.querySelector(".actions-inner");
-            if (otherActionsInner) {
-                otherActionsInner.classList.remove("overflow-visible");
-            }
-
-            const arrow = c.querySelector(".arrow");
-
-            if (arrow) {
-                arrow.textContent = "▼";
-            }
-
+            setCardOpen(c, false);
         }
 
     });
 
-    card.classList.toggle("active");
-
-    const isActive = card.classList.contains("active");
-
-    const actions = card.querySelector(".actions");
-    const actionsInner = card.querySelector(".actions-inner");
-
-    // Keep overflow clipped while the panel grows/shrinks so the height
-    // transition stays smooth, then reveal it once fully open so button
-    // shadows aren't cut off by the container's edge.
-    actionsInner.classList.remove("overflow-visible");
-
-    if (isActive) {
-
-        let revealed = false;
-
-        const reveal = () => {
-            if (!revealed && card.classList.contains("active")) {
-                revealed = true;
-                actionsInner.classList.add("overflow-visible");
-            }
-        };
-
-        actions.addEventListener("transitionend", function onOpenEnd(e) {
-
-            if (e.propertyName !== "grid-template-rows") {
-                return;
-            }
-
-            reveal();
-            actions.removeEventListener("transitionend", onOpenEnd);
-
-        });
-
-        // Fallback in case transitionend doesn't fire (e.g. reduced-motion).
-        setTimeout(reveal, 320);
-
-    }
-
-    const arrow = card.querySelector(".arrow");
-
-    arrow.textContent =
-        isActive
-            ? "▲"
-            : "▼";
+    setCardOpen(card, willOpen);
 
 }
 
