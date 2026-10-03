@@ -344,9 +344,10 @@ inset:0;
 
 background:rgba(0,0,0,.55);
 
-backdrop-filter:blur(4px);
-
--webkit-backdrop-filter:blur(4px);
+/* No backdrop-filter on the full-screen dim: when this overlay is removed
+   (dialog closed) the browser has to tear down a screen-sized blur layer in
+   one frame, which shows as a white/flat flash on mobile. A 4px blur under a
+   55% black dim is barely visible, so it is dropped for a clean close. */
 
 display:flex;
 
@@ -401,9 +402,9 @@ border-radius:20px;
 
 padding:44px 24px 24px;
 
-backdrop-filter:blur(16px);
-
--webkit-backdrop-filter:blur(16px);
+/* Backdrop blur removed for the same reason as the overlay: the panel is
+   ~85% opaque, so the blur was invisible but still had to be torn down in a
+   single frame on close. */
 
 box-shadow:0 20px 50px rgba(0,0,0,.4);
 
