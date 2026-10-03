@@ -2799,7 +2799,15 @@ function unlockBodyScroll() {
         document.body.style.left = "";
         document.body.style.right = "";
         document.body.style.width = "";
+        /* html has scroll-behavior:smooth, which would make this restore
+           ANIMATE from the top down to the saved position — the page visibly
+           jumps to the top and scrolls back (the flash on closing a modal).
+           Force an instant jump for this one call. */
+        const root = document.documentElement;
+        const prevBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = "auto";
         window.scrollTo(0, scrollLockY);
+        root.style.scrollBehavior = prevBehavior;
     }
 
 }
