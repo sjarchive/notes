@@ -1412,6 +1412,10 @@ gap:25px;
 
 padding:10px 0;
 
+/* Stops the browser's scroll anchoring from nudging the scroll position on
+   every frame while one card closes above another that is opening. */
+overflow-anchor:none;
+
 }
 
 
@@ -1506,31 +1510,23 @@ margin-bottom:0;
    instead of separate margin/padding transitions all re-laying-out the card
    at once. Opacity/transform stay on the compositor. */
 
+/* .actions only clips and resizes (height); the fade/slide lives on
+   .actions-inner, whose size never changes. A layer whose box changes every
+   frame gets re-drawn every frame, so the compositor-driven opacity/transform
+   must sit on the fixed-size child, not on the resizing panel. */
 .actions{
 
 height:0;
 
 overflow:hidden;
 
-opacity:0;
-
-transform:translateY(-8px);
-
 pointer-events:none;
-
-transition:
-opacity .3s cubic-bezier(.25,.8,.25,1),
-transform .38s cubic-bezier(.25,.8,.25,1);
 
 }
 
 .note-card.active .actions{
 
 height:auto;
-
-opacity:1;
-
-transform:translateY(0);
 
 pointer-events:auto;
 
@@ -1586,6 +1582,22 @@ flex-wrap:wrap;
 gap:10px;
 
 padding:19px 4px 8px;
+
+opacity:0;
+
+transform:translateY(-8px);
+
+transition:
+opacity .3s cubic-bezier(.25,.8,.25,1),
+transform .38s cubic-bezier(.25,.8,.25,1);
+
+}
+
+.note-card.active .actions-inner{
+
+opacity:1;
+
+transform:translateY(0);
 
 }
 
