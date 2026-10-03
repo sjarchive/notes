@@ -911,6 +911,24 @@ overscroll-behavior:contain;
 
 }
 
+/* Smooth glide while the on-screen keyboard opens/closes (class is added
+   briefly from repositionAuthModal). */
+.modal-overlay.kb-animating{
+
+transition:height .28s cubic-bezier(.25,.8,.25,1);
+
+}
+
+@media (prefers-reduced-motion: reduce){
+
+.modal-overlay.kb-animating{
+
+transition:none;
+
+}
+
+}
+
 html{
 
 scroll-behavior:smooth;
@@ -2843,6 +2861,8 @@ function closeAuthModal() {
     overlay.classList.add("hidden-form");
     // Clear the inline positioning set by repositionAuthModal() so the
     // overlay falls back to its default CSS (inset:0) next time it opens.
+    overlay._lastH = undefined;
+    overlay.classList.remove("kb-animating");
     overlay.style.height = "";
     overlay.style.top = "";
     unlockBodyScroll();
@@ -2882,6 +2902,23 @@ function repositionAuthModal() {
             return;
         }
 
+        /* Animate only when the height itself changes a lot (the keyboard
+           opening/closing), so the dialog glides to its new centre instead of
+           snapping. Small height/offset changes (scrolling, URL bar) stay
+           instant so the overlay never lags behind the real viewport. The
+           first positioning after opening is also instant. */
+        if (
+            overlay._lastH !== undefined &&
+            Math.abs(vv.height - overlay._lastH) > 60
+        ) {
+            overlay.classList.add("kb-animating");
+            clearTimeout(overlay._kbTimer);
+            overlay._kbTimer = setTimeout(() => {
+                overlay.classList.remove("kb-animating");
+            }, 320);
+        }
+
+        overlay._lastH = vv.height;
         overlay.style.height = vv.height + "px";
         overlay.style.top = vv.offsetTop + "px";
 
@@ -3393,6 +3430,8 @@ function closeManageModal() {
         overlay.classList.add("hidden-form");
         // Clear the inline positioning set by repositionAuthModal() so the
         // overlay falls back to its default CSS (inset:0) next time it opens.
+        overlay._lastH = undefined;
+        overlay.classList.remove("kb-animating");
         overlay.style.height = "";
         overlay.style.top = "";
         unlockBodyScroll();
