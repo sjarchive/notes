@@ -911,11 +911,22 @@ overscroll-behavior:contain;
 
 }
 
+/* GPU-friendly repositioning for the on-screen keyboard.  The overlay stays
+   full-viewport (inset:0) and is slid/clipped via transform + clip-path so
+   the browser never has to re-layout the overlay or its backdrop-filter on
+   every visualViewport event — everything stays on the compositor thread. */
+.modal-overlay{
+
+will-change:transform, clip-path;
+
+}
+
 /* Smooth glide while the on-screen keyboard opens/closes (class is added
    briefly from repositionAuthModal). */
 .modal-overlay.kb-animating{
 
-transition:height .28s cubic-bezier(.25,.8,.25,1);
+transition:transform .28s cubic-bezier(.25,.8,.25,1),
+           clip-path .28s cubic-bezier(.25,.8,.25,1);
 
 }
 
@@ -2863,8 +2874,8 @@ function closeAuthModal() {
     // overlay falls back to its default CSS (inset:0) next time it opens.
     overlay._lastH = undefined;
     overlay.classList.remove("kb-animating");
-    overlay.style.height = "";
-    overlay.style.top = "";
+    overlay.style.transform = "";
+    overlay.style.clipPath  = "";
     unlockBodyScroll();
 }
 
@@ -2880,8 +2891,21 @@ function closeAuthModalOnOverlay(event) {
    whole page (background blobs, backdrop blur, etc.) from reflowing and
    jittering. The trade-off is that position:fixed elements no longer get
    pushed up automatically, so the modal has to be repositioned manually.
-   Only the modal overlay itself is resized here — nothing else on the page
-   is touched, so this doesn't reintroduce the original jitter. */
+
+   APPROACH (GPU-friendly, no layout thrash):
+   The overlay stays at position:fixed; inset:0 at all times — its layout
+   box never changes. Instead we translate it vertically to the visual
+   viewport's offsetTop (to chase the keyboard) and clip its bottom to the
+   visual viewport height. Both transform and clip-path are compositor-
+   friendly: they don't trigger layout or repaint of the overlay or its
+   backdrop-filter, so the modal stays perfectly smooth even during the
+   keyboard's opening/closing animation.
+
+   Updates are batched via requestAnimationFrame so that rapid-fire
+   visualViewport resize/scroll events only produce one style write per
+   frame. */
+
+let _repositionRafId = 0;
 
 function repositionAuthModal() {
 
@@ -2889,46 +2913,63 @@ function repositionAuthModal() {
         return;
     }
 
-    const vv = window.visualViewport;
+    /* Batch: only schedule one rAF per frame. */
+    if (_repositionRafId) {
+        return;
+    }
 
-    /* The Manage Notes modal has the same fixed-overlay + text-input setup
-       as the auth modal, so it needs the same keyboard-aware treatment —
-       reposition whichever overlay is currently open. */
-    ["authModalOverlay", "manageModal1Overlay", "manageModal2Overlay"].forEach(id => {
+    _repositionRafId = requestAnimationFrame(() => {
 
-        const overlay = document.getElementById(id);
+        _repositionRafId = 0;
 
-        if (!overlay || overlay.classList.contains("hidden-form")) {
-            return;
-        }
+        const vv = window.visualViewport;
 
-        /* Animate only when the height itself changes a lot (the keyboard
-           opening/closing), so the dialog glides to its new centre instead of
-           snapping. Small height/offset changes (scrolling, URL bar) stay
-           instant so the overlay never lags behind the real viewport. The
-           first positioning after opening is also instant. */
-        if (
-            overlay._lastH !== undefined &&
-            Math.abs(vv.height - overlay._lastH) > 60
-        ) {
-            overlay.classList.add("kb-animating");
-            clearTimeout(overlay._kbTimer);
-            overlay._kbTimer = setTimeout(() => {
-                overlay.classList.remove("kb-animating");
-            }, 320);
-        }
+        /* The Manage Notes modal has the same fixed-overlay + text-input setup
+           as the auth modal, so it needs the same keyboard-aware treatment —
+           reposition whichever overlay is currently open. */
+        ["authModalOverlay", "manageModal1Overlay", "manageModal2Overlay"].forEach(id => {
 
-        overlay._lastH = vv.height;
-        overlay.style.height = vv.height + "px";
-        overlay.style.top = vv.offsetTop + "px";
+            const overlay = document.getElementById(id);
+
+            if (!overlay || overlay.classList.contains("hidden-form")) {
+                return;
+            }
+
+            /* Animate only when the height itself changes a lot (the keyboard
+               opening/closing), so the dialog glides to its new centre instead of
+               snapping. Small height/offset changes (scrolling, URL bar) stay
+               instant so the overlay never lags behind the real viewport. The
+               first positioning after opening is also instant. */
+            if (
+                overlay._lastH !== undefined &&
+                Math.abs(vv.height - overlay._lastH) > 60
+            ) {
+                overlay.classList.add("kb-animating");
+                clearTimeout(overlay._kbTimer);
+                overlay._kbTimer = setTimeout(() => {
+                    overlay.classList.remove("kb-animating");
+                }, 320);
+            }
+
+            overlay._lastH = vv.height;
+
+            /* Compositor-only positioning: translate the overlay so its top
+               edge aligns with the visual viewport's top, and clip its bottom
+               so only the visible portion (above the keyboard) is interactive
+               and rendered.  Neither property triggers layout. */
+            overlay.style.transform = "translateY(" + vv.offsetTop + "px)";
+            overlay.style.clipPath  =
+                "inset(0 0 " + (window.innerHeight - vv.offsetTop - vv.height) + "px 0)";
+
+        });
 
     });
 
 }
 
 if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", repositionAuthModal);
-    window.visualViewport.addEventListener("scroll", repositionAuthModal);
+    window.visualViewport.addEventListener("resize",  repositionAuthModal);
+    window.visualViewport.addEventListener("scroll",  repositionAuthModal);
 }
 
 /* Fallback for browsers (seen on some Firefox builds) where the keyboard
@@ -3432,8 +3473,8 @@ function closeManageModal() {
         // overlay falls back to its default CSS (inset:0) next time it opens.
         overlay._lastH = undefined;
         overlay.classList.remove("kb-animating");
-        overlay.style.height = "";
-        overlay.style.top = "";
+        overlay.style.transform = "";
+        overlay.style.clipPath  = "";
         unlockBodyScroll();
 
     });
