@@ -298,7 +298,7 @@ body::before {
 }
 
 #themeToggle:active {
-    transform: scale(.94) !important;
+    transform: scale(.95) !important;
 }
 
 .profile-container {
@@ -325,7 +325,7 @@ body::before {
 }
 
 .profile-btn:active {
-    transform: scale(.94) !important;
+    transform: scale(.95) !important;
 }
 
 .profile-menu {
@@ -428,7 +428,7 @@ h1 {
 }
 
 #enterBtn:active {
-    transform: translateY(-1px) scale(.94) !important;
+    transform: translateY(-1px) scale(.95) !important;
     box-shadow: 0 3px 10px rgba(0, 0, 0, .2) !important;
 }
 
@@ -505,7 +505,7 @@ h1 {
 }
 
 .year-card:active {
-    transform: translateY(-2px) scale(.96) !important;
+    transform: translateY(-2px) scale(.97) !important;
 }
 
 .year-card-icon {
@@ -542,7 +542,7 @@ h1 {
 }
 
 .back-btn:active {
-    transform: scale(.94) !important;
+    transform: scale(.95) !important;
 }
 
 .coming-soon-card {
@@ -684,7 +684,7 @@ html.acc-anim .note-card {
 }
 
 .actions button:active:not(:disabled) {
-    transform: scale(.96) !important;
+    transform: scale(.97) !important;
 }
 
 .actions button:disabled {
