@@ -5,8 +5,8 @@
   3. Streams PDF bytes at GET/HEAD /pdf/:filename from Supabase Storage.
 */
 
-const SUPABASE_URL = "https://eztspowxxwxhavhpkthm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6dHNwb3d4eHd4aGF2aHBrdGhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MzI2MTYsImV4cCI6MjEwMzAwODYxNn0.fVnX45GDjT8HMVXSAm5Xucr8J6PCJ9AQ4vkjmJLNeRE";
+// All of SUPABASE_URL, SUPABASE_ANON_KEY, WORKER_SECRET and
+// SUPABASE_SERVICE_ROLE_KEY are Wrangler secrets (see `wrangler secret list`).
 const NOTES_BUCKET = "notes";
 
 const ACCESS_LINK_EXPIRY_SECONDS = 60 * 5; // 5 minutes
@@ -35,14 +35,18 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(pingSupabase());
+    ctx.waitUntil(pingSupabase(env));
   }
 };
 
-async function pingSupabase() {
+async function pingSupabase(env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+    console.error("Supabase keepalive skipped: missing SUPABASE_URL/SUPABASE_ANON_KEY");
+    return;
+  }
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
-      headers: { apikey: SUPABASE_ANON_KEY }
+    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/`, {
+      headers: { apikey: env.SUPABASE_ANON_KEY }
     });
     console.log(`Supabase keepalive ping: HTTP ${res.status}`);
   } catch (err) {
@@ -50,7 +54,7 @@ async function pingSupabase() {
   }
 }
 
-async function getSupabaseUser(request) {
+async function getSupabaseUser(request, env) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : null;
   if (!token) {
@@ -58,10 +62,10 @@ async function getSupabaseUser(request) {
   }
 
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        apikey: SUPABASE_ANON_KEY
+        apikey: env.SUPABASE_ANON_KEY
       }
     });
     if (!res.ok) {
@@ -125,11 +129,11 @@ function isValidFilename(name) {
 }
 
 async function handleSign(request, url, env) {
-  if (!env.WORKER_SECRET) {
+  if (!env.WORKER_SECRET || !env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
     return new Response("Server configuration error", { status: 500 });
   }
 
-  const user = await getSupabaseUser(request);
+  const user = await getSupabaseUser(request, env);
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -195,7 +199,7 @@ async function handlePdfServe(request, url, env) {
   }
 
   const upstream = await fetch(
-    `${SUPABASE_URL}/storage/v1/object/${NOTES_BUCKET}/${encodeURIComponent(filename)}`,
+    `${env.SUPABASE_URL}/storage/v1/object/${NOTES_BUCKET}/${encodeURIComponent(filename)}`,
     {
       method: request.method,
       headers: upstreamHeaders
