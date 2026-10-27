@@ -347,8 +347,8 @@ function updateManageNotesButton() {
     button.classList.toggle("hidden-form", !(isAdmin && activeYear));
     if (activeYear) {
         button.textContent = activeYear === 2
-            ? "🗂 Manage II Year Notes"
-            : "🗂 Manage I Year Notes";
+            ? "🗂️ Manage II Year Notes"
+            : "🗂️ Manage I Year Notes";
         button.onclick = () => openManageModal(activeYear);
     }
 }
@@ -592,15 +592,15 @@ function renderNotesGrid() {
         previewBtn.type = "button";
         previewBtn.className = "preview-btn";
         previewBtn.setAttribute("aria-label", `View ${note.title} PDF`);
-        previewBtn.textContent = "👁 View";
-        previewBtn.addEventListener("click", withTapFeedback(previewBtn, "👁 View", () => previewPDF(note.filename)));
+        previewBtn.textContent = "👁️ View";
+        previewBtn.addEventListener("click", withTapFeedback(previewBtn, "👁️ View", () => previewPDF(note.filename)));
 
         const downloadBtn = document.createElement("button");
         downloadBtn.type = "button";
         downloadBtn.className = "download-btn";
         downloadBtn.setAttribute("aria-label", `Download ${note.title} PDF`);
-        downloadBtn.textContent = "⬇ Download";
-        downloadBtn.addEventListener("click", withTapFeedback(downloadBtn, "⬇ Download", () => downloadPDF(note.filename)));
+        downloadBtn.textContent = "⬇️ Download";
+        downloadBtn.addEventListener("click", withTapFeedback(downloadBtn, "⬇️ Download", () => downloadPDF(note.filename)));
 
         const shareBtn = document.createElement("button");
         shareBtn.type = "button";
@@ -845,7 +845,7 @@ function renderManageList() {
         const del = document.createElement("button");
         del.type = "button";
         del.className = "manage-delete-btn";
-        del.textContent = "🗑";
+        del.textContent = "🗑️";
         del.setAttribute("aria-label", `Delete ${note.title}`);
         del.addEventListener("click", () => handleDeleteNote(note.id, note.filename, note.title));
 

@@ -89,6 +89,20 @@ button,
     touch-action: manipulation;
 }
 
+/* ---- Universal press feedback: fast-in, gentle-out, works on quick taps ---- */
+button:active {
+    transform: scale(.97);
+    /* !important outranks ID / class base rules' long transition shorthand, so the dip
+       starts instantly on press; the base duration returns on release for a soft spring-back */
+    transition-duration: .06s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button:active {
+        transform: none;
+    }
+}
+
 body::before {
     content: "";
     position: fixed;
@@ -279,7 +293,7 @@ body::before {
 }
 
 #themeToggle:active {
-    transform: scale(.96);
+    transform: scale(.94);
 }
 
 .profile-container {
@@ -306,7 +320,7 @@ body::before {
 }
 
 .profile-btn:active {
-    transform: scale(.96);
+    transform: scale(.94);
 }
 
 .profile-menu {
@@ -409,7 +423,7 @@ h1 {
 }
 
 #enterBtn:active {
-    transform: translateY(-1px) scale(.96);
+    transform: translateY(-1px) scale(.94);
     box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
 }
 
@@ -486,7 +500,7 @@ h1 {
 }
 
 .year-card:active {
-    transform: translateY(-2px) scale(.98);
+    transform: translateY(-2px) scale(.96);
 }
 
 .year-card-icon {
@@ -523,7 +537,7 @@ h1 {
 }
 
 .back-btn:active {
-    transform: scale(.96);
+    transform: scale(.94);
 }
 
 .coming-soon-card {
@@ -665,7 +679,7 @@ html.acc-anim .note-card {
 }
 
 .actions button:active:not(:disabled) {
-    transform: scale(.98);
+    transform: scale(.96);
 }
 
 .actions button:disabled {
