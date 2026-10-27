@@ -90,16 +90,21 @@ button,
 }
 
 /* ---- Universal press feedback: fast-in, gentle-out, works on quick taps ---- */
-button:active {
-    transform: scale(.97);
+/* transform is !important so the press dip outranks the :hover rules further below —
+   on desktop, hover and active match at once while pressing, and hover (later in this
+   file, or higher specificity) would otherwise win and lift buttons instead of dipping */
+button:active,
+.year-card:active {
+    transform: scale(.97) !important;
     /* !important outranks ID / class base rules' long transition shorthand, so the dip
        starts instantly on press; the base duration returns on release for a soft spring-back */
     transition-duration: .06s !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    button:active {
-        transform: none;
+    button:active,
+    .year-card:active {
+        transform: none !important;
     }
 }
 
@@ -293,7 +298,7 @@ body::before {
 }
 
 #themeToggle:active {
-    transform: scale(.94);
+    transform: scale(.94) !important;
 }
 
 .profile-container {
@@ -320,7 +325,7 @@ body::before {
 }
 
 .profile-btn:active {
-    transform: scale(.94);
+    transform: scale(.94) !important;
 }
 
 .profile-menu {
@@ -423,8 +428,8 @@ h1 {
 }
 
 #enterBtn:active {
-    transform: translateY(-1px) scale(.94);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
+    transform: translateY(-1px) scale(.94) !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .2) !important;
 }
 
 /* ===================== Notes & Year Views ===================== */
@@ -500,7 +505,7 @@ h1 {
 }
 
 .year-card:active {
-    transform: translateY(-2px) scale(.96);
+    transform: translateY(-2px) scale(.96) !important;
 }
 
 .year-card-icon {
@@ -537,7 +542,7 @@ h1 {
 }
 
 .back-btn:active {
-    transform: scale(.94);
+    transform: scale(.94) !important;
 }
 
 .coming-soon-card {
@@ -679,7 +684,7 @@ html.acc-anim .note-card {
 }
 
 .actions button:active:not(:disabled) {
-    transform: scale(.96);
+    transform: scale(.96) !important;
 }
 
 .actions button:disabled {
